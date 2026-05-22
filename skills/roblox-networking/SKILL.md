@@ -508,8 +508,6 @@ local SCORE_TO_WIN = 10
 -- Map pool (models stored in ServerStorage/Maps/)
 local MAP_NAMES = { "Desert", "Forest", "City" }
 
-
-
 ---
 
 ## Security Hardening
