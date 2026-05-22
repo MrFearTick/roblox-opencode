@@ -205,12 +205,12 @@ function InventoryManager.new(dataStoreService, messagingService)
 end
 
 function InventoryManager:saveInventory(playerId: number, inventory: { [string]: number })
-    local key = "inv_" .. tostring(playerId)
+    local key = `inv_{playerId}`
     self._dataStore:SetAsync(key, inventory)
 end
 
 function InventoryManager:loadInventory(playerId: number): { [string]: number }
-    local key = "inv_" .. tostring(playerId)
+    local key = `inv_{playerId}`
     return self._dataStore:GetAsync(key) or {}
 end
 
@@ -813,7 +813,7 @@ function CurrencyManager.newPlayerData(): CurrencyData
 end
 
 function CurrencyManager:loadPlayer(playerId: number): CurrencyData
-    local raw = self._store:GetAsync("currency_" .. tostring(playerId))
+    local raw = self._store:GetAsync(`currency_{playerId}`)
     local data = raw or CurrencyManager.newPlayerData()
     self._cache[playerId] = data
     return data
@@ -822,7 +822,7 @@ end
 function CurrencyManager:savePlayer(playerId: number)
     local data = self._cache[playerId]
     if data then
-        self._store:SetAsync("currency_" .. tostring(playerId), data)
+        self._store:SetAsync(`currency_{playerId}`, data)
     end
 end
 

@@ -44,16 +44,7 @@ cargo install rojo
 # Download binary from https://github.com/rojo-rbx/rojo/releases
 ```
 
-After installing via Aftman, the `aftman.toml` in your project root looks like:
-
-```toml
-[tools]
-rojo = "rojo-rbx/rojo@7.4.4"
-wally = "UpliftGames/wally@0.3.2"
-selene = "Kampfkarren/selene@0.27.1"
-stylua = "JohnnyMorganz/StyLua@0.20.0"
-lune = "lune-org/lune@0.8.9"
-```
+After installing via Aftman, the `aftman.toml` pins tool versions for the project (e.g., `rojo = "rojo-rbx/rojo@7.4.4"`, `wally = "UpliftGames/wally@0.3.2"`). This ensures all contributors and CI use identical tool versions.
 
 ### File Naming Conventions
 
@@ -79,77 +70,46 @@ Rojo determines the Roblox class of each file by its suffix:
   "name": "MyGame",
   "tree": {
     "$className": "DataModel",
-
     "ServerScriptService": {
       "$className": "ServerScriptService",
-      "Server": {
-        "$path": "src/server"
-      }
+      "Server": { "$path": "src/server" }
     },
-
     "ServerStorage": {
       "$className": "ServerStorage",
-      "Storage": {
-        "$path": "src/server-storage"
-      }
+      "Storage": { "$path": "src/server-storage" }
     },
-
     "ReplicatedStorage": {
       "$className": "ReplicatedStorage",
-      "Shared": {
-        "$path": "src/shared"
-      },
-      "Packages": {
-        "$path": "Packages"
-      }
+      "Shared": { "$path": "src/shared" },
+      "Packages": { "$path": "Packages" }
     },
-
     "StarterPlayer": {
       "$className": "StarterPlayer",
       "StarterPlayerScripts": {
         "$className": "StarterPlayerScripts",
-        "Client": {
-          "$path": "src/client"
-        }
+        "Client": { "$path": "src/client" }
       },
       "StarterCharacterScripts": {
         "$className": "StarterCharacterScripts",
-        "Character": {
-          "$path": "src/character"
-        }
+        "Character": { "$path": "src/character" }
       }
     },
-
     "StarterGui": {
       "$className": "StarterGui",
-      "UI": {
-        "$path": "src/ui"
-      }
+      "UI": { "$path": "src/ui" }
     },
-
     "Workspace": {
       "$className": "Workspace",
-      "$properties": {
-        "FilteringEnabled": true
-      }
+      "$properties": { "FilteringEnabled": true }
     },
-
     "Lighting": {
       "$className": "Lighting",
-      "$properties": {
-        "Technology": "Future"
-      }
+      "$properties": { "Technology": "Future" }
     },
-
-    "SoundService": {
-      "$className": "SoundService"
-    },
-
+    "SoundService": { "$className": "SoundService" },
     "HttpService": {
       "$className": "HttpService",
-      "$properties": {
-        "HttpEnabled": true
-      }
+      "$properties": { "HttpEnabled": true }
     }
   }
 }
@@ -300,45 +260,9 @@ aftman add Kampfkarren/selene
 cargo install selene
 ```
 
-### selene.toml — Complete Example
+### selene.toml — Configuration
 
-```toml
-std = "roblox"
-
-[rules]
-# Error-level rules (will fail CI)
-unused_variable = "warn"
-shadowing = "warn"
-unscoped_variables = "deny"
-incorrect_standard_library_use = "warn"
-divide_by_zero = "warn"
-undefined_variable = "deny"
-deprecated = "warn"
-global_usage = "warn"
-if_same_then_else = "warn"
-ifs_same_cond = "warn"
-multiple_statements = "warn"
-parenthese_conditions = "warn"
-type_check_inside_call = "warn"
-mismatched_arg_count = "warn"
-empty_if = "warn"
-empty_loop = "warn"
-almost_swapped = "warn"
-bad_string_escape = "deny"
-compare_nan = "deny"
-constant_table_comparison = "warn"
-high_cyclomatic_complexity = "warn"
-manual_table_clone = "warn"
-mixed_table = "warn"
-must_use = "warn"
-roblox_incorrect_color3_new_bounds = "warn"
-roblox_incorrect_roact_usage = "warn"
-roblox_suspicious_udim2_new = "warn"
-suspicious_reverse_loop = "warn"
-
-[config]
-high_cyclomatic_complexity = { maximum_complexity = 20 }
-```
+> **Config summary:** Sets `std = "roblox"` for Roblox globals, configures rules like `unused_variable = "warn"`, `undefined_variable = "deny"`, and `high_cyclomatic_complexity` (max 20). The AI agent can generate a `selene.toml` appropriate for any project's lint strictness level.
 
 ### Standard Library
 
@@ -394,20 +318,9 @@ aftman add JohnnyMorganz/StyLua
 cargo install stylua
 ```
 
-### stylua.toml — Complete Example
+### stylua.toml — Configuration
 
-```toml
-column_width = 120
-line_endings = "Unix"
-indent_type = "Tabs"
-indent_width = 4
-quote_style = "AutoPreferDouble"
-call_parentheses = "Always"
-collapse_simple_statement = "Never"
-
-[sort_requires]
-enabled = true
-```
+> **Config summary:** Controls column width (120), tab indentation (width 4), Unix line endings, double quotes, always-use call parentheses, and sorted requires. The AI agent can generate a `stylua.toml` matching any team's style preferences.
 
 ### Common Commands
 
@@ -427,16 +340,7 @@ stylua --config-path stylua.toml --check src/
 
 ### VS Code Format-on-Save
 
-Add to your `.vscode/settings.json`:
-
-```json
-{
-  "[luau]": {
-    "editor.defaultFormatter": "JohnnyMorganz.stylua",
-    "editor.formatOnSave": true
-  }
-}
-```
+Add StyLua as the default Luau formatter with format-on-save enabled in `.vscode/settings.json` (covered in the VS Code Setup section below).
 
 ### Ignoring Sections
 
@@ -454,46 +358,9 @@ local uglyButNecessaryMatrix = {
 
 ## 6. Git Workflows
 
-### .gitignore — Complete Template
+### .gitignore — Key Patterns
 
-```gitignore
-# Roblox place/model files (built from source via Rojo)
-*.rbxlx
-*.rbxl
-*.rbxm
-*.rbxmx
-
-# If you use a base place file, un-ignore it:
-# !base.rbxlx
-
-# Wally packages (installed from registry, not committed)
-/Packages/
-
-# Wally lock file (optional: some teams commit this for reproducibility)
-# wally.lock
-
-# Rojo sourcemap (auto-generated)
-sourcemap.json
-
-# Selene generated std
-roblox.yml
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Editor files
-.vscode/
-!.vscode/settings.json
-!.vscode/extensions.json
-
-# Aftman binaries
-~/.aftman/
-
-# Build output
-/build/
-/dist/
-```
+> **Config summary:** Ignore `*.rbxl*`/`*.rbxm*` build artifacts, `Packages/` (Wally-installed), `sourcemap.json`, `roblox.yml`, OS/editor files, and `~/.aftman/`. Un-ignore `base.rbxlx` if using a committed place file. The AI agent can generate a complete `.gitignore` for any Roblox project.
 
 ### Branching Strategy
 
@@ -543,47 +410,11 @@ rojo build default.project.json --output game.rbxlx --base base.rbxlx
 
 ### .vscode/settings.json
 
-```json
-{
-  "luau-lsp.sourcemap.enabled": true,
-  "luau-lsp.sourcemap.rojoProjectFile": "default.project.json",
-  "luau-lsp.sourcemap.autogenerate": true,
-  "luau-lsp.types.roblox": true,
-  "luau-lsp.diagnostics.enabled": true,
-  "luau-lsp.completion.enabled": true,
-  "luau-lsp.hover.enabled": true,
-
-  "[luau]": {
-    "editor.defaultFormatter": "JohnnyMorganz.stylua",
-    "editor.formatOnSave": true,
-    "editor.tabSize": 4,
-    "editor.insertSpaces": false
-  },
-
-  "files.associations": {
-    "*.luau": "luau",
-    "*.lua": "luau"
-  },
-
-  "files.exclude": {
-    "Packages/": true,
-    "sourcemap.json": true
-  }
-}
-```
+> **Config summary:** Enables Luau LSP sourcemap auto-generation, Roblox type definitions, diagnostics, and StyLua format-on-save with tabs. Hides `Packages/` and `sourcemap.json` from the file explorer. The AI agent can generate this file for any Roblox project.
 
 ### .vscode/extensions.json
 
-```json
-{
-  "recommendations": [
-    "JohnnyMorganz.luau-lsp",
-    "evaera.vscode-rojo",
-    "Kampfkarren.selene-vscode",
-    "JohnnyMorganz.stylua"
-  ]
-}
-```
+> **Config summary:** Recommends Luau LSP, Rojo, Selene, and StyLua extensions for VS Code. The AI agent can generate this file for any Roblox project.
 
 ### Debugging Tips
 
@@ -596,98 +427,9 @@ rojo build default.project.json --output game.rbxlx --base base.rbxlx
 
 ## 8. CI/CD — GitHub Actions
 
-### Complete Workflow — `.github/workflows/ci.yml`
+### CI Workflow — `.github/workflows/ci.yml`
 
-```yaml
-name: CI
-
-on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main, develop]
-
-jobs:
-  lint:
-    name: Lint (Selene)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Aftman
-        uses: ok-nick/setup-aftman@v0.4.2
-
-      - name: Generate Roblox standard library
-        run: selene generate-roblox-std
-
-      - name: Run Selene
-        run: selene src/
-
-  format:
-    name: Format Check (StyLua)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Aftman
-        uses: ok-nick/setup-aftman@v0.4.2
-
-      - name: Check formatting
-        run: stylua --check src/
-
-  analyze:
-    name: Type Check (Luau LSP)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Aftman
-        uses: ok-nick/setup-aftman@v0.4.2
-
-      - name: Install packages
-        run: wally install
-
-      - name: Generate sourcemap
-        run: rojo sourcemap default.project.json -o sourcemap.json
-
-      - name: Run Luau analysis
-        run: luau-lsp analyze --sourcemap sourcemap.json --defs=globalTypes.d.luau src/
-
-  test:
-    name: Tests (Lune)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Aftman
-        uses: ok-nick/setup-aftman@v0.4.2
-
-      - name: Run tests
-        run: lune run tests/run
-
-  build:
-    name: Build Check
-    runs-on: ubuntu-latest
-    needs: [lint, format, test]
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Aftman
-        uses: ok-nick/setup-aftman@v0.4.2
-
-      - name: Install packages
-        run: wally install
-
-      - name: Build place file
-        run: rojo build default.project.json -o build.rbxl
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: game-build
-          path: build.rbxl
-          retention-days: 7
-```
+> **Config summary:** The CI pipeline runs 5 jobs: Selene lint, StyLua format check, Luau LSP type analysis, Lune tests, and a Rojo build check (after all others pass). Uses `ok-nick/setup-aftman@v0.4.2` for tool installation and `actions/upload-artifact@v4` for build artifacts. The AI agent can generate a project-specific CI workflow.
 
 ### CI Commands Summary
 
@@ -733,104 +475,23 @@ lune run path/to/script.luau
 
 Lune provides globals that replace Roblox services for external scripting:
 
-```lua
--- .lune/example.luau
-local fs = require("@lune/fs")
-local net = require("@lune/net")
-local process = require("@lune/process")
-local stdio = require("@lune/stdio")
-local task = require("@lune/task")
+| Module | Purpose |
+|--------|---------|
+| `@lune/fs` | File system read/write |
+| `@lune/net` | HTTP requests |
+| `@lune/process` | Shell commands, environment |
+| `@lune/stdio` | User prompts, terminal I/O |
+| `@lune/task` | Timers and scheduling |
 
--- Read a file
-local content = fs.readFile("src/shared/Config.luau")
-print("File length:", #content)
-
--- HTTP request
-local response = net.request("https://api.example.com/data")
-print("Status:", response.statusCode)
-
--- Run a shell command
-local result = process.spawn("rojo", { "sourcemap", "default.project.json", "-o", "sourcemap.json" })
-print("Exit code:", result.code)
-
--- Prompt user
-local answer = stdio.prompt("confirm", "Run tests?")
-if answer then
-    print("Running tests...")
-end
-```
+> The AI agent can generate Lune scripts using these modules for any build/test/tooling task.
 
 ### Test Runner Example
 
-```lua
--- tests/run.luau (executed via `lune run tests/run`)
-local fs = require("@lune/fs")
-local process = require("@lune/process")
-
-local passed = 0
-local failed = 0
-
-local function runTest(name: string, testFn: () -> ())
-    local success, err = pcall(testFn)
-    if success then
-        passed += 1
-        print(`  PASS: {name}`)
-    else
-        failed += 1
-        print(`  FAIL: {name} — {err}`)
-    end
-end
-
-local function assertEqual(actual: any, expected: any, message: string?)
-    if actual ~= expected then
-        error(message or `Expected {expected}, got {actual}`)
-    end
-end
-
--- Example tests
-runTest("math works", function()
-    assertEqual(2 + 2, 4)
-end)
-
-runTest("string concat", function()
-    assertEqual("hello" .. " " .. "world", "hello world")
-end)
-
-print(`\nResults: {passed} passed, {failed} failed`)
-
-if failed > 0 then
-    process.exit(1)
-end
-```
+> **Config summary:** Lune test scripts (`tests/run.luau`) use `pcall`-based test runners with pass/fail reporting and `process.exit(1)` on failure. The AI agent can generate test runners and test files for any project.
 
 ### Lune for Build Scripts
 
-```lua
--- .lune/build.luau
-local process = require("@lune/process")
-local fs = require("@lune/fs")
-
--- Install packages
-print("Installing packages...")
-local wally = process.spawn("wally", { "install" })
-assert(wally.code == 0, "wally install failed")
-
--- Generate sourcemap
-print("Generating sourcemap...")
-local sourcemap = process.spawn("rojo", { "sourcemap", "default.project.json", "-o", "sourcemap.json" })
-assert(sourcemap.code == 0, "sourcemap generation failed")
-
--- Build
-print("Building place file...")
-if not fs.isDir("build") then
-    fs.writeDir("build")
-end
-
-local build = process.spawn("rojo", { "build", "default.project.json", "-o", "build/game.rbxl" })
-assert(build.code == 0, "rojo build failed")
-
-print("Build complete: build/game.rbxl")
-```
+> **Config summary:** Lune build scripts (`.lune/build.luau`) automate `wally install`, `rojo sourcemap`, and `rojo build` as a single `lune run build` command. The AI agent can generate project-specific build scripts.
 
 ---
 
@@ -870,100 +531,40 @@ my-game/
 
 ```
 my-game/
-├── .github/
-│   └── workflows/
-│       └── ci.yml
-├── .vscode/
-│   ├── settings.json
-│   └── extensions.json
-├── aftman.toml
-├── default.project.json
-├── wally.toml
-├── wally.lock
-├── selene.toml
-├── stylua.toml
-├── .gitignore
-├── .luaurc                    (Luau configuration for aliases)
+├── .github/workflows/ci.yml
+├── .vscode/settings.json, extensions.json
+├── aftman.toml, default.project.json, wally.toml, wally.lock
+├── selene.toml, stylua.toml, .gitignore, .luaurc
 ├── Packages/                  (git-ignored)
 ├── src/
 │   ├── server/
-│   │   ├── Services/
-│   │   │   ├── DataService/
-│   │   │   │   ├── init.luau
-│   │   │   │   ├── DataSchema.luau
-│   │   │   │   └── Migrations.luau
-│   │   │   ├── CombatService/
-│   │   │   │   ├── init.luau
-│   │   │   │   ├── DamageCalculator.luau
-│   │   │   │   └── HitDetection.luau
-│   │   │   └── MatchmakingService/
-│   │   │       └── init.luau
-│   │   ├── Components/
-│   │   │   ├── Loot.luau
-│   │   │   └── NPC.luau
+│   │   ├── Services/{DataService,CombatService,MatchmakingService}/
+│   │   │   └── (each: init.luau + sub-modules)
+│   │   ├── Components/{Loot,NPC}.luau
 │   │   └── init.server.luau
 │   ├── client/
-│   │   ├── Controllers/
-│   │   │   ├── InputController.luau
-│   │   │   ├── CameraController.luau
-│   │   │   └── UIController.luau
-│   │   ├── Components/
-│   │   │   ├── Billboard.luau
-│   │   │   └── Interactable.luau
-│   │   ├── UI/
-│   │   │   ├── Screens/
-│   │   │   │   ├── HUD.luau
-│   │   │   │   ├── Inventory.luau
-│   │   │   │   └── Settings.luau
-│   │   │   └── Components/
-│   │   │       ├── Button.luau
-│   │   │       └── Tooltip.luau
+│   │   ├── Controllers/{Input,Camera,UI}Controller.luau
+│   │   ├── Components/{Billboard,Interactable}.luau
+│   │   ├── UI/Screens/{HUD,Inventory,Settings}.luau
 │   │   └── init.client.luau
-│   ├── character/
-│   │   ├── Animate.client.luau
-│   │   └── Health.client.luau
+│   ├── character/{Animate,Health}.client.luau
 │   ├── shared/
-│   │   ├── Constants.luau
-│   │   ├── Types.luau
-│   │   ├── Enums.luau
-│   │   ├── Utils/
-│   │   │   ├── Math.luau
-│   │   │   ├── String.luau
-│   │   │   └── Table.luau
-│   │   └── Network/
-│   │       ├── Remotes.luau
-│   │       └── Middleware.luau
-│   ├── server-storage/
-│   │   ├── Maps/
-│   │   └── Assets/
-│   └── ui/
-│       └── Widgets/
-├── tests/
-│   ├── run.luau
-│   ├── server/
-│   │   └── DataService.spec.luau
-│   └── shared/
-│       └── Utils.spec.luau
-├── .lune/
-│   ├── build.luau
-│   └── deploy.luau
+│   │   ├── Constants.luau, Types.luau, Enums.luau
+│   │   ├── Utils/{Math,String,Table}.luau
+│   │   └── Network/{Remotes,Middleware}.luau
+│   ├── server-storage/{Maps,Assets}/
+│   └── ui/Widgets/
+├── tests/{run.luau, server/*.spec.luau, shared/*.spec.luau}
+├── .lune/{build,deploy}.luau
 ├── assets/                    (raw assets: PSD, blend files, etc.)
-└── docs/
-    └── architecture.md
+└── docs/architecture.md
 ```
+
+Key patterns: each service is a folder with `init.luau` + sub-modules; shared types/enums live in `src/shared/`; tests mirror `src/` structure.
 
 ### .luaurc for Path Aliases
 
-```json
-{
-  "aliases": {
-    "Packages": "Packages",
-    "Shared": "src/shared",
-    "Server": "src/server",
-    "Client": "src/client"
-  }
-}
-```
+> **Config summary:** `.luaurc` defines Luau path aliases (e.g., `"Shared" → "src/shared"`) so `require("@Shared/Utils")` works in both editor and Lune. The AI agent can generate an appropriate `.luaurc` based on the project's directory structure.
 
 ---
 
@@ -1173,27 +774,7 @@ When only the official Roblox MCP server is available, operate with this reduced
 
 ### Standard Mode Workflow Adaptations
 
-Since Standard Mode lacks exploration tools (`get_file_tree`, `grep_scripts`, etc.), compensate by:
-
-- Using `run_code` with scripts that traverse the DataModel and return structure as printed output
-- Reading `get_console_output` to capture the results of exploratory scripts
-- Building instance-search logic inline via `run_code` instead of relying on `search_objects`
-
-Example — exploring structure in Standard Mode:
-
-```lua
--- Run via run_code to mimic get_file_tree
-local function printTree(instance, indent)
-    indent = indent or 0
-    print(string.rep("  ", indent) .. instance.ClassName .. ": " .. instance.Name)
-    for _, child in ipairs(instance:GetChildren()) do
-        printTree(child, indent + 1)
-    end
-end
-printTree(game)
-```
-
-Then read the output via `get_console_output`.
+Since Standard Mode lacks exploration tools (`get_file_tree`, `grep_scripts`, etc.), compensate by using `run_code` with scripts that traverse the DataModel and return structure as printed output, then read results via `get_console_output`. Build instance-search logic inline via `run_code` instead of relying on `search_objects`.
 
 ---
 
@@ -1203,39 +784,7 @@ When no MCP server is connected, generate self-contained Luau code blocks that t
 
 ### Script Output Format
 
-Always include clear placement instructions:
-
-```
--- ==============================================
--- SCRIPT: WeaponSystem
--- PLACE IN: ServerScriptService
--- TYPE: Script (server-side)
--- ==============================================
-
-local WeaponSystem = {}
--- ... implementation ...
-return WeaponSystem
-```
-
-### For Rojo Users
-
-When the user mentions Rojo, Wally, or a filesystem-based workflow, output a directory structure:
-
-```
-src/
-├── server/
-│   ├── WeaponSystem.server.luau
-│   └── DataManager.server.luau
-├── client/
-│   ├── InputHandler.client.luau
-│   └── UIController.client.luau
-├── shared/
-│   ├── Constants.luau
-│   └── Utils.luau
-└── default.project.json
-```
-
-Include the `default.project.json` mapping when creating new projects or restructuring existing ones.
+Always include clear placement instructions (target service, script type) in a comment header. For Rojo users, output a directory structure instead of placement comments. Include `default.project.json` mapping when creating new projects.
 
 ### Offline Conventions
 
@@ -1250,114 +799,41 @@ Include the `default.project.json` mapping when creating new projects or restruc
 
 ### Autonomous Build
 
-A full build cycle from specification to working game systems.
+A full build cycle from specification to working game systems:
 
-```
-1. SCAFFOLD
-   ├── get_file_tree / get_project_structure  →  understand current state
-   ├── Plan instance hierarchy based on requirements
-   └── create_build / execute_luau  →  create folder structure and placeholder instances
-
-2. GENERATE CORE SYSTEMS
-   ├── For each system (e.g., combat, inventory, UI):
-   │   ├── Generate server scripts  →  execute_luau to create and populate Script instances
-   │   ├── Generate client scripts  →  execute_luau to create and populate LocalScript instances
-   │   └── Generate shared modules  →  execute_luau to create and populate ModuleScript instances
-   └── Wire up RemoteEvents/RemoteFunctions between client and server
-
-3. INSERT ASSETS
-   ├── Search Creator Store for needed models/audio
-   └── Insert and position assets in the scene
-
-4. TEST
-   ├── start_playtest
-   ├── get_playtest_output  →  read console for errors
-   └── stop_playtest
-
-5. FIX & ITERATE
-   ├── grep_scripts to find error source
-   ├── get_script_source to read the problematic script
-   ├── execute_luau to apply the fix
-   └── Return to step 4 (max 5 iterations)
-```
+1. **SCAFFOLD** — `get_file_tree` / `get_project_structure` → understand current state → plan hierarchy → `create_build` / `execute_luau` to create folder structure
+2. **GENERATE CORE SYSTEMS** — For each system: `execute_luau` to create Script, LocalScript, ModuleScript instances; wire up RemoteEvents/Functions
+3. **INSERT ASSETS** — Search Creator Store for models/audio → insert and position in scene
+4. **TEST** — `start_playtest` → `get_playtest_output` → `stop_playtest`
+5. **FIX & ITERATE** — `grep_scripts` → `get_script_source` → `execute_luau` to fix → return to step 4 (max 5 iterations)
 
 ### Debug Loop
 
-Systematic error resolution with bounded retries.
+Systematic error resolution with bounded retries (max 5 iterations):
 
-```
-1. DETECT
-   ├── get_console_output / get_playtest_output  →  capture errors
-   └── Parse error messages for script name, line number, error type
-
-2. LOCATE
-   ├── grep_scripts with error-related keywords
-   ├── get_script_source for the identified script
-   └── Analyze surrounding code for root cause
-
-3. FIX
-   ├── Generate corrected code
-   ├── execute_luau to replace the script source
-   └── Create an undo waypoint before applying
-
-4. VERIFY
-   ├── start_playtest (or re-run the specific code path)
-   ├── get_playtest_output  →  check if error persists
-   └── stop_playtest
-
-5. ITERATE OR REPORT
-   ├── If error persists and attempts < 5  →  return to step 2
-   ├── If error resolved  →  report success
-   └── If attempts >= 5  →  report findings and suggest manual investigation
-```
+1. **DETECT** — `get_console_output` / `get_playtest_output` → capture errors; parse for script name, line, error type
+2. **LOCATE** — `grep_scripts` with error keywords → `get_script_source` for the identified script → analyze root cause
+3. **FIX** — Generate corrected code → `execute_luau` to replace script source (create undo waypoint first)
+4. **VERIFY** — `start_playtest` → `get_playtest_output` → check if error persists → `stop_playtest`
+5. **ITERATE** — If error persists and attempts < 5 → return to step 2; if resolved → report success; if attempts ≥ 5 → report findings
 
 ### Bulk Modification
 
-Safe large-scale changes across many instances.
+Safe large-scale changes across many instances:
 
-```
-1. SEARCH
-   ├── search_objects / search_by_property  →  identify all targets
-   └── mass_get_property  →  read current values for audit
-
-2. PLAN
-   ├── Review the list of affected instances
-   ├── Confirm the change is correct (log count and sample values)
-   └── Create undo waypoint via execute_luau:
-       game:GetService("ChangeHistoryService"):SetWaypoint("Before bulk edit")
-
-3. EXECUTE
-   ├── execute_luau with a loop over all targets
-   └── Apply changes in batches if count > 100
-
-4. VERIFY
-   ├── mass_get_property  →  confirm new values
-   ├── Spot-check a few instances via get_instance_properties
-   └── Report: "Changed X instances, verified Y samples"
-```
+1. **SEARCH** — `search_objects` / `search_by_property` → identify targets; `mass_get_property` → audit current values
+2. **PLAN** — Review affected instances, confirm correctness, create undo waypoint via `ChangeHistoryService:SetWaypoint()`
+3. **EXECUTE** — `execute_luau` with loop over all targets; batch if count > 100
+4. **VERIFY** — `mass_get_property` → confirm new values; spot-check via `get_instance_properties`
 
 ### Project Exploration
 
-Understanding an unfamiliar place file.
+Understanding an unfamiliar place file:
 
-```
-1. STRUCTURE
-   ├── get_file_tree  →  full hierarchy
-   └── get_project_structure  →  high-level layout
-
-2. SCRIPTS
-   ├── Identify all scripts via search_objects (ClassName = "Script" / "LocalScript" / "ModuleScript")
-   ├── get_script_source for key scripts (main systems, entry points)
-   └── grep_scripts for patterns like "require", "RemoteEvent", "BindableEvent"
-
-3. ARCHITECTURE
-   ├── Map module dependencies (who requires whom)
-   ├── Map client-server communication (RemoteEvents/Functions)
-   └── Identify data flow (DataStores, player data, state management)
-
-4. REPORT
-   └── Summarize: services used, script count, system architecture, potential issues
-```
+1. **STRUCTURE** — `get_file_tree` → full hierarchy; `get_project_structure` → high-level layout
+2. **SCRIPTS** — Identify all scripts via `search_objects`; `get_script_source` for key scripts; `grep_scripts` for `require`, `RemoteEvent`, `BindableEvent`
+3. **ARCHITECTURE** — Map module dependencies, client-server communication (RemoteEvents/Functions), and data flow (DataStores, player data)
+4. **REPORT** — Summarize services used, script count, system architecture, potential issues
 
 ---
 
@@ -1389,123 +865,19 @@ Understanding an unfamiliar place file.
 
 ## Best Practices
 
-### Batch Related Operations
-
-Group related reads and writes to minimize round-trips:
-
-```lua
--- Instead of 5 separate execute_luau calls:
-local part1 = workspace:FindFirstChild("Part1")
-local part2 = workspace:FindFirstChild("Part2")
-local part3 = workspace:FindFirstChild("Part3")
-part1.BrickColor = BrickColor.new("Bright red")
-part2.BrickColor = BrickColor.new("Bright red")
-part3.BrickColor = BrickColor.new("Bright red")
-```
-
-### Read Before Write
-
-Always understand the current state before making changes:
-
-```
-1. get_script_source("ServerScriptService.GameManager")
-2. Analyze the existing code
-3. execute_luau to apply targeted modifications (not blind overwrites)
-```
-
-### Verify After Modify
-
-Confirm that changes took effect:
-
-```
-1. execute_luau  →  make the change
-2. get_instance_properties  →  confirm the new value
-   OR
-3. start_playtest  →  confirm runtime behavior
-```
-
-### Use Undo Waypoints Strategically
-
-Create waypoints at meaningful boundaries, not after every micro-change:
-
-- Before a batch of related changes (one waypoint for "Add combat system")
-- Before experimental changes that might need rollback
-- Before any operation the user might want to undo as a unit
+- **Batch operations:** Group related reads/writes in a single `execute_luau` call to minimize round-trips.
+- **Read before write:** Always `get_script_source` before modifying; apply targeted changes, not blind overwrites.
+- **Verify after modify:** After `execute_luau`, confirm with `get_instance_properties` or `start_playtest`.
+- **Undo waypoints:** Create `ChangeHistoryService:SetWaypoint()` before batches, experimental changes, or anything the user might want to undo as a unit.
 
 ---
 
 ## Anti-Patterns
 
-### Running Code Without Checking Studio State
-
-**Wrong:**
-```
-execute_luau("workspace.Part.Position = Vector3.new(0, 10, 0)")
--- Might fail if Studio is in Play mode and Part doesn't exist in the play DataModel
-```
-
-**Right:**
-```
-1. get_studio_mode  →  confirm Edit mode
-2. execute_luau(...)
-```
-
-### Bulk Changes Without Undo Points
-
-**Wrong:**
-```
-execute_luau("for _, v in workspace:GetDescendants() do if v:IsA('Part') then v:Destroy() end end")
--- No way to recover
-```
-
-**Right:**
-```
-1. execute_luau: ChangeHistoryService:SetWaypoint("Before cleanup")
-2. execute_luau: perform the bulk delete
-3. Verify results
-```
-
-### Assuming Tool Availability
-
-**Wrong:**
-```
--- Calling grep_scripts when only the Official server is connected
--- Tool will not be found; operation fails
-```
-
-**Right:**
-```
-1. Detect which server is available (see MCP Detection above)
-2. Use only the tools confirmed to exist
-3. Fall back to run_code + get_console_output workarounds in Standard Mode
-```
-
-### Blind Script Overwrites
-
-**Wrong:**
-```
-execute_luau: set script.Source to entirely new code without reading the original
--- Loses existing work, custom modifications, comments
-```
-
-**Right:**
-```
-1. get_script_source  →  read current implementation
-2. Understand what exists
-3. Merge new logic with existing code or confirm full replacement with user
-```
-
-### Ignoring Error Output
-
-**Wrong:**
-```
-1. execute_luau(code)
-2. Assume success and move on
-```
-
-**Right:**
-```
-1. execute_luau(code)
-2. Check return value / output for errors
-3. If error: enter Debug Loop pattern
-```
+| Anti-Pattern | Fix |
+|---|---|
+| Running code without checking Studio state | Always call `get_studio_mode` first; don't modify DataModel during playtest |
+| Bulk changes without undo points | Set `ChangeHistoryService:SetWaypoint()` before any bulk or destructive operation |
+| Assuming tool availability | Detect which MCP server is connected; fall back to `run_code` + `get_console_output` in Standard Mode |
+| Blind script overwrites | Always `get_script_source` first; merge new logic with existing code or confirm full replacement with user |
+| Ignoring error output | Always check return values/`; if error, enter the Debug Loop pattern (max 5 iterations) |

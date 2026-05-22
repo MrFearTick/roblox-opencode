@@ -564,7 +564,7 @@ local RemoteValidator = {}
 type TypeSpec = string | (value: any) -> boolean
 
 function RemoteValidator.checkType(value: any, expected: TypeSpec): boolean
-    if type(expected) == "function" then
+    if typeof(expected) == "function" then
         return expected(value)
     end
     return typeof(value) == expected
@@ -603,7 +603,7 @@ end
 ----------------------------------------------------------------------- ]]
 
 function RemoteValidator.checkRange(value: number, min: number, max: number): boolean
-    return type(value) == "number"
+    return typeof(value) == "number"
         and value == value -- NaN check
         and value >= min
         and value <= max

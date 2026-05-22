@@ -608,8 +608,7 @@ local function safeWaitForChild(
     if not child then
         warn(
             string.format(
-                "[safeWaitForChild] '%s' not found in '%s' after %d seconds. "
-                    .. "Check that it exists and is spelled correctly.",
+                "[safeWaitForChild] '%s' not found in '%s' after %d seconds. Check that it exists and is spelled correctly.",
                 childName,
                 parent:GetFullName(),
                 timeout or WAIT_TIMEOUT
