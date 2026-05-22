@@ -1,0 +1,18 @@
+{
+	"name": "@rbxutil/query",
+	"version": "0.2.0",
+	"main": "init.luau",
+	"repository": {
+		"url": "git+https://github.com/Sleitnick/RbxUtil.git"
+	},
+	"license": "MIT",
+	"types": "index.d.ts",
+	"files": [
+		"./*",
+		"!*.toml",
+		"!*.json"
+	],
+	"publishConfig": {
+		"access": "public"
+	}
+}
