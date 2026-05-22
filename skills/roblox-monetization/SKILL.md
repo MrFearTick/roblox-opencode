@@ -523,12 +523,12 @@ end)
 
 As of 2026, the Developer Exchange (DevEx) rate is approximately:
 
-> **1 Robux earned = ~$0.0035 USD**
+> **1 Robux earned = ~$0.0038 USD**
 
 This means:
-- **30,000 Robux** (minimum cashout) = ~**$105 USD**
-- **100,000 Robux** = ~**$350 USD**
-- **1,000,000 Robux** = ~**$3,500 USD**
+- **30,000 Robux** (minimum cashout) = ~**$114 USD**
+- **100,000 Robux** = ~**$380 USD**
+- **1,000,000 Robux** = ~**$3,800 USD**
 
 ### Revenue Projection Formulas
 
@@ -537,17 +537,17 @@ Daily Revenue (Robux) = DAU x Conversion Rate x Average Purchase (Robux)
 
 Monthly Revenue (Robux) = Daily Revenue x 30
 
-Monthly Revenue (USD) = Monthly Revenue (Robux) x 0.0035
+Monthly Revenue (USD) = Monthly Revenue (Robux) x 0.0038
 ```
 
 **Example projections at different scales:**
 
 | DAU | Conversion Rate | Avg Purchase | Daily Robux | Monthly USD |
 |---|---|---|---|---|
-| 100 | 2% | 100 R$ | 200 | $21 |
-| 1,000 | 2% | 100 R$ | 2,000 | $210 |
-| 10,000 | 3% | 150 R$ | 45,000 | $4,725 |
-| 100,000 | 3% | 150 R$ | 450,000 | $47,250 |
+| 100 | 2% | 100 R$ | 200 | $23 |
+| 1,000 | 2% | 100 R$ | 2,000 | $228 |
+| 10,000 | 3% | 150 R$ | 45,000 | $5,130 |
+| 100,000 | 3% | 150 R$ | 450,000 | $51,300 |
 
 **Typical conversion rates on Roblox:** 1-5% of DAU makes a purchase on any given day. Well-optimized games with strong shop design reach the higher end.
 
@@ -559,20 +559,53 @@ Monthly Revenue (USD) = Monthly Revenue (Robux) x 0.0035
 Hours spent developing = X
 Hourly rate target = $Y/hr
 Required total earnings = X * Y
-Required Robux = (X * Y) / 0.0035
+Required Robux = (X * Y) / 0.0038
 Required paying players = Required Robux / Average Purchase
 ```
 
 ---
 
-## 8. Ethical Monetization
+## 8. Roblox TOS Compliance (MANDATORY)
+
+These are not suggestions. Violating them gets your game taken down.
+
+### Odds Disclosure (enforced, games get removed)
+
+**Any item sold with a randomized element MUST display the exact drop chance percentages in-game.** This applies to:
+- Loot boxes / mystery boxes
+- Random pet hatching
+- Gacha pulls
+- Any "chance" mechanic tied to a purchase
+
+If a pet has a 0.1% drop rate, the player must see "0.1%" before they buy. Not "rare," not "legendary," not a color code. The exact number.
+
+Games have been taken down for violating this. Roblox enforces it.
+
+```luau
+-- Example: display odds on a loot box GUI
+local oddsLabel = script.Parent.OddsLabel
+oddsLabel.Text = "Drop rates: Common 60% | Uncommon 25% | Rare 10% | Epic 4% | Legendary 1%"
+```
+
+### Other TOS Rules That Affect Monetization
+
+- **No gambling mechanics.** Do not implement anything that resembles gambling (betting Robux, coin flips, roulette). Roblox bans these.
+- **No off-platform sales.** Do not direct players to buy Robux or items outside of Roblox's systems.
+- **No misleading product descriptions.** GamePass and DevProduct descriptions must exactly match what the player receives.
+- **No purchased advantages in experiences marked as "All Ages."** Stricter rules apply for experiences targeting younger audiences.
+- **Refund policy.** If a player reports not receiving an item, investigate and honor legitimate claims. Roblox can reverse charges.
+
+> **Recommendation:** Download and read the full [Roblox Community Standards](https://en.help.roblox.com/hc/en-us/articles/203313410-Roblox-Community-Standards) and [Terms of Use](https://en.help.roblox.com/hc/en-us/articles/115004647846-Roblox-Terms-of-Use). Feed them to the AI as context when working on monetization features.
+
+---
+
+## 9. Ethical Monetization
 
 Roblox's audience skews young (a significant portion is under 16). This carries a responsibility to monetize fairly. Roblox also actively enforces policies against predatory practices.
 
 ### Do
 
 - **Provide genuine value** for every purchase. The player should feel good about what they got.
-- **Disclose odds** on any randomized rewards (loot boxes, mystery eggs, random pet hatching). Display exact percentages.
 - **Allow core gameplay for free.** Free players should enjoy the full game loop. Purchases should enhance, not gate.
 - **Price transparently.** Show the Robux cost clearly before any purchase prompt.
 - **Offer earnable alternatives.** If a cosmetic costs 100 Robux, also let players earn it after 10 hours of gameplay.
@@ -589,7 +622,7 @@ Roblox's audience skews young (a significant portion is under 16). This carries 
 
 ---
 
-## 9. Best Practices
+## 10. Best Practices
 
 ### Server-Side Purchase Verification (Always)
 
@@ -646,7 +679,7 @@ Keep a DataStore or external log of all purchases so you can:
 
 ---
 
-## 10. Anti-Patterns
+## 11. Anti-Patterns
 
 ### Client-Side Purchase Granting (Exploitable)
 
