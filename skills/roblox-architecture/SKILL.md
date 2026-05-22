@@ -18,7 +18,7 @@ last_reviewed: 2026-05-21
 - Organizing or refactoring an existing codebase that has grown unwieldy
 - Answering architecture questions: "Where should this script go?", "How should client talk to server?", "How do I structure modules?"
 - Onboarding onto a Roblox project and need to understand the standard conventions
-- Choosing between a flat script layout and a framework like Knit
+- Choosing between a flat script layout and a modular loader pattern
 
 This document covers the Roblox data model, service hierarchy, script types, client-server communication, module patterns, framework options, folder organization, best practices, and anti-patterns.
 
@@ -223,7 +223,7 @@ StarterPack/
 
 ### Script (Server Script)
 
-- **Runs on:** Server
+- **Runs on:** Server (default RunContext)
 - **Valid containers:** `ServerScriptService`, `ServerStorage` (when parented under certain conditions), `Workspace` (discouraged)
 - **File convention:** `*.server.lua` in Rojo projects
 - **Access:** Full access to server APIs (`DataStoreService`, `MessagingService`, `HttpService`, etc.)
@@ -233,9 +233,31 @@ StarterPack/
 local Players = game:GetService("Players")
 
 Players.PlayerAdded:Connect(function(player)
-    print(player.Name .. " joined the server")
+    print(`{player.Name} joined the server`)
 end)
 ```
+
+### RunContext (Script Behavior Override)
+
+By default, `Script` runs on the server. Setting `Script.RunContext` changes this:
+
+- **`Enum.RunContext.Server`** (default) — runs on the server, only in server-valid containers
+- **`Enum.RunContext.Client`** — runs on the client, can be placed ANYWHERE (Workspace, ReplicatedStorage, etc.)
+
+`RunContext = Client` is powerful for workspace-local effects, proximity scripts, or anything the client sees but doesn't belong in StarterPlayerScripts:
+
+```lua
+-- A Script in Workspace with RunContext = Client
+-- Runs on every client, perfect for local visual effects
+local part = script.Parent
+local RunService = game:GetService("RunService")
+
+RunService.Heartbeat:Connect(function(dt)
+    part.CFrame *= CFrame.Angles(0, math.rad(30 * dt), 0)
+end)
+```
+
+> **Note:** `LocalScript` does NOT have RunContext. It always runs on the client in client-valid containers only. Use `Script` + `RunContext = Client` when you need client scripts outside the usual client containers.
 
 ### LocalScript (Client Script)
 
@@ -381,7 +403,7 @@ RoundEndEvent:Fire("Team Alpha", 15)
 
 -- Script B
 RoundEndEvent.Event:Connect(function(winningTeam, score)
-    print(winningTeam .. " won with " .. score .. " points")
+    print(`{winningTeam} won with {score} points`)
 end)
 ```
 
@@ -549,6 +571,10 @@ Instead of calling directly into another module, fire a BindableEvent that the o
 
 ### OOP Module Pattern (Class-based)
 
+For metatable-based classes, type annotations, inheritance, and the `.` vs `:` conventions, see **roblox-luau-mastery** → OOP Patterns.
+
+The architecture-specific pattern: modules that return a class table. The class is defined in a ModuleScript, required by whoever needs it, and instances are created via `ClassName.new()`.
+
 ```lua
 -- ReplicatedStorage/Modules/Weapon.lua
 local Weapon = {}
@@ -570,14 +596,12 @@ function Weapon.new(name: string, damage: number, cooldown: number): Weapon
     return self
 end
 
-function Weapon.canFire(self: Weapon): boolean
+function Weapon:canFire(): boolean
     return (os.clock() - self._lastFired) >= self.cooldown
 end
 
-function Weapon.fire(self: Weapon): number?
-    if not self:canFire() then
-        return nil
-    end
+function Weapon:fire(): number?
+    if not self:canFire() then return nil end
     self._lastFired = os.clock()
     return self.damage
 end
@@ -598,86 +622,6 @@ end
 ---
 
 ## 7. Framework Patterns
-
-### Knit Framework
-
-Knit provides a structured way to define **Services** (server) and **Controllers** (client) with automatic networking.
-
-**Server Service:**
-```lua
--- ServerScriptService/Services/CoinService.lua
-local Knit = require(game:GetService("ReplicatedStorage").Packages.Knit)
-
-local CoinService = Knit.CreateService({
-    Name = "CoinService",
-
-    -- Declare client-exposed API
-    Client = {
-        CoinCollected = Knit.CreateSignal(), -- auto-creates RemoteEvent
-    },
-})
-
-function CoinService.Client:GetCoins(player)
-    -- Client calls this via controller; auto-creates RemoteFunction
-    return self.Server:_getCoins(player)
-end
-
-function CoinService:_getCoins(player)
-    return playerCoins[player] or 0
-end
-
-function CoinService:KnitStart()
-    -- Runs after all services are initialized
-end
-
-function CoinService:KnitInit()
-    -- Runs first, set up state here
-end
-
-return CoinService
-```
-
-**Client Controller:**
-```lua
--- StarterPlayerScripts/Controllers/CoinController.lua
-local Knit = require(game:GetService("ReplicatedStorage").Packages.Knit)
-
-local CoinController = Knit.CreateController({
-    Name = "CoinController",
-})
-
-function CoinController:KnitStart()
-    local CoinService = Knit.GetService("CoinService")
-
-    -- Call server method (yields, returns value)
-    local coins = CoinService:GetCoins()
-    print("I have", coins, "coins")
-
-    -- Listen for server signal
-    CoinService.CoinCollected:Connect(function(amount)
-        print("Collected", amount, "coins!")
-    end)
-end
-
-return CoinController
-```
-
-**Bootstrapper:**
-```lua
--- ServerScriptService/KnitServer.server.lua
-local Knit = require(game:GetService("ReplicatedStorage").Packages.Knit)
-
--- Load all services
-for _, module in script.Parent.Services:GetChildren() do
-    if module:IsA("ModuleScript") then
-        require(module)
-    end
-end
-
-Knit.Start():andThen(function()
-    print("Knit server started")
-end):catch(warn)
-```
 
 ### Single Script Architecture (SSA)
 
@@ -713,16 +657,15 @@ return Loader
 
 ### Comparison
 
-| Aspect | No Framework (Manual) | Single Script Architecture | Knit |
-|---|---|---|---|
-| **Complexity** | Low | Medium | Medium-High |
-| **Boilerplate** | Minimal | Low | Moderate |
-| **Networking** | Manual RemoteEvent setup | Manual | Automatic (Services expose Client API) |
-| **Learning curve** | Just Roblox APIs | Small pattern to learn | Framework-specific concepts |
-| **Scalability** | Degrades without discipline | Good with init/start pattern | Good, enforced structure |
-| **Dependency management** | Manual require chains | Centralized loader | Built-in service discovery |
-| **Community adoption** | Universal | Common | Popular but third-party |
-| **Best for** | Jams, small projects, learning | Medium projects, teams wanting control | Larger projects, teams wanting convention |
+| Aspect | No Framework (Manual) | Single Script Architecture |
+|---|---|---|
+| **Complexity** | Low | Medium |
+| **Boilerplate** | Minimal | Low |
+| **Networking** | Manual RemoteEvent setup | Manual |
+| **Learning curve** | Just Roblox APIs | Small pattern to learn |
+| **Scalability** | Degrades without discipline | Good with init/start pattern |
+| **Dependency management** | Manual require chains | Centralized loader |
+| **Best for** | Jams, small projects, learning | Medium projects, teams wanting control |
 
 ---
 
@@ -808,12 +751,12 @@ game
 
 ### Large Game (Framework-Based with Rojo)
 
-Uses a framework (e.g., Knit), Rojo for file sync, and a strict folder convention. File system mirrors the Roblox hierarchy.
+Uses a loader pattern (SSA), Rojo for file sync, and a strict folder convention. File system mirrors the Roblox hierarchy.
 
 ```
 src/
 +-- server/                            --> syncs to ServerScriptService
-||   +-- KnitServer.server.lua          -- Knit bootstrapper
+||   +-- Main.server.lua               -- Bootstrapper
 ||   +-- services/
 ||   |   +-- PlayerDataService.lua
 ||   |   +-- CombatService.lua
@@ -824,7 +767,7 @@ src/
 ||       +-- Destructible.lua
 ||       +-- Interactable.lua
 +-- client/                            --> syncs to StarterPlayerScripts
-||   +-- KnitClient.client.lua          -- Knit bootstrapper
+||   +-- ClientMain.client.lua         -- Client bootstrapper
 ||   +-- controllers/
 ||   |   +-- InputController.lua
 ||   |   +-- CameraController.lua
