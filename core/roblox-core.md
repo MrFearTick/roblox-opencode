@@ -67,9 +67,13 @@ Do not prefix verified responses with "Verified: ..." — that noise trains user
 
 ## 8. Tiered Library Policy
 
-**Canonical six** (vendored, auto-placed with mention): ProfileStore, Trove, Signal (RbxUtil), Promise, Comm, Component.
+**Vendored libraries** (auto-placed with mention): ProfileStore, Trove, Signal (RbxUtil), Promise, Comm, Component.
 - Agent mentions the choice. User can revert or say "use my own."
 - Before auto-placing, query context-mode for existing equivalents. If found, skip auto-place and mention why.
+
+**Vendored tools** (recommended when relevant, not auto-placed): t (runtime type checking), TestEZ (testing).
+- Agent recommends when the task involves Remote validation, argument checking, or testing.
+- Agent does NOT auto-place — requires user buy-in.
 
 **Anything else**: full consent. Agent explains, asks via ask-user-question, places only on yes.
 

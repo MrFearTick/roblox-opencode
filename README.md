@@ -18,7 +18,7 @@ pi install npm:roblox-pi
 - Curated extension stack (8 packages) bringing Pi to full coding-agent parity
 - Built-in Studio MCP integration
 - Luau LSP diagnostics on every write
-- 6 vendored libraries (ProfileStore, Trove, Signal, Promise, Comm, Component)
+- 8 vendored libraries (ProfileStore, Trove, Signal, Promise, Comm, Component, t, TestEZ)
 
 ## Prerequisites
 

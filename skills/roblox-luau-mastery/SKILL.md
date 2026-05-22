@@ -33,8 +33,10 @@ The harness ships vendored copies of these libraries. Use them instead of raw Ro
 - **Comm** (Sleitnick/RbxUtil) — typed client-server remotes. Use instead of raw RemoteEvent/RemoteFunction.
 - **Component** (Sleitnick/RbxUtil) — CollectionService tag binding with lifecycle. Use instead of manual tag listeners.
 - **ProfileStore** (loleris/MadStudioRoblox) — session-locked DataStore with retry. Use instead of raw DataStoreService.
+- **t** (osyrisrblx/t) — runtime type checking for RemoteEvent validation, function arguments, DataStore schemas. Use instead of manual typeof() chains.
+- **TestEZ** (Roblox/testez) — BDD testing framework. Use to write .spec files for your modules.
 
-The agent will auto-place these when applicable. You can veto by saying "use my own" or having an existing equivalent in your project.
+The agent will recommend these when relevant. You can veto by saying "use my own" or having an existing equivalent in your project.
 
 ---
 

@@ -24,7 +24,9 @@ Testing in Roblox is non-trivial because game code depends heavily on engine ser
 
 ## 2. TestEZ Framework
 
-### Installation via Wally
+> **TestEZ is vendored in this harness** at `vendor/testez/` (v0.4.2, Apache 2.0). The agent can place it into your project when you need testing. No Wally install required.
+
+### Installation via Wally (alternative)
 Add TestEZ as a dev dependency in `wally.toml`:
 
 ```toml
