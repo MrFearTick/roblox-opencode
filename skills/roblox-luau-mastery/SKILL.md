@@ -42,22 +42,15 @@ The agent will auto-place these when applicable. You can veto by saying "use my 
 
 ### Variables
 
-All variables should be declared `local`. Global variables pollute the shared environment and cause hard-to-trace bugs.
+All variables must be declared `local`. Global variables pollute the shared environment.
 
 ```luau
--- Correct: always use local
-local playerName = "Alice"
-local score = 0
-local isAlive = true
-
 -- Constants use UPPER_CASE by convention
 local MAX_HEALTH = 100
 local RESPAWN_TIME = 5
 
--- Multiple assignment
-local x, y, z = 1, 2, 3
-
 -- Compound assignment (Luau extension, not in Lua 5.1)
+local score = 0
 score += 10
 score -= 5
 score *= 2
@@ -67,14 +60,9 @@ score /= 2
 ### Functions
 
 ```luau
--- Standard function declaration
+-- Type annotations on parameters and returns
 local function calculateDamage(baseDamage: number, multiplier: number): number
     return baseDamage * multiplier
-end
-
--- Anonymous function / closure
-local onHit = function(target: Part)
-    target:Destroy()
 end
 
 -- Variadic functions
@@ -84,35 +72,21 @@ local function logMessage(prefix: string, ...: any)
     print(message)
 end
 
--- Functions are first-class values
-local function applyToAll(items: { Instance }, action: (Instance) -> ())
-    for _, item in items do
-        action(item)
-    end
-end
-
 -- Multiple return values
 local function getPosition(): (number, number, number)
     return 10, 20, 30
 end
-
 local x, y, z = getPosition()
 ```
 
 ### Tables
 
-Tables are the only compound data structure in Luau. They serve as arrays, dictionaries, objects, and namespaces.
+Tables are the only compound data structure. They serve as arrays, dictionaries, objects, and namespaces.
 
 ```luau
--- Array (sequential integer keys, 1-based)
-local fruits = { "apple", "banana", "cherry" }
-print(fruits[1]) --> "apple"
-print(#fruits)   --> 3
-
 -- Dictionary (string keys)
 -- NOTE: name = "Alice" is shorthand for ["name"] = "Alice".
 -- Luau tables are NOT JSON objects. Keys are strings, not identifiers.
--- Use shorthand for known keys, bracket notation for dynamic/computed keys.
 local player = {
     name = "Alice",
     health = 100,
@@ -125,63 +99,17 @@ print(player["health"])  --> 100
 local fieldName = "health"
 print(player[fieldName]) --> 100
 
--- Mixed table (legal but discouraged — see Sharp Edges)
--- Avoid mixing array and dictionary parts
-
--- Nested tables
-local config = {
-    graphics = {
-        quality = "high",
-        shadows = true,
-    },
-    audio = {
-        volume = 0.8,
-        music = true,
-    },
-}
-print(config.graphics.quality) --> "high"
-
--- Table as a namespace / module
-local MathUtils = {}
-
-function MathUtils.lerp(a: number, b: number, t: number): number
-    return a + (b - a) * t
-end
-
-function MathUtils.clampedLerp(a: number, b: number, t: number): number
-    return MathUtils.lerp(a, b, math.clamp(t, 0, 1))
-end
+-- Arrays are 1-based, NOT 0-based
+local items = { "sword", "shield", "potion" }
+print(items[1]) --> "sword"
+print(#items)   --> 3 (length operator)
 ```
 
 ### Control Flow
 
 ```luau
--- if / elseif / else
-local health = 50
-if health <= 0 then
-    print("Dead")
-elseif health < 30 then
-    print("Critical")
-else
-    print("Alive")
-end
-
--- Numeric for (start, end, step)
-for i = 1, 10 do
-    print(i)
-end
-
-for i = 10, 1, -1 do
-    print(i) -- countdown
-end
-
--- Generic for with ipairs (array iteration, respects order)
-local items = { "sword", "shield", "potion" }
-for index, item in ipairs(items) do
-    print(index, item)
-end
-
 -- Generalized iteration (Luau extension — preferred over ipairs/pairs)
+local items = { "sword", "shield", "potion" }
 for index, item in items do
     print(index, item)
 end
@@ -191,19 +119,6 @@ local stats = { health = 100, mana = 50, stamina = 75 }
 for key, value in stats do
     print(key, value)
 end
-
--- while loop
-local count = 0
-while count < 10 do
-    count += 1
-end
-
--- repeat-until loop (condition checked AFTER body, body always runs at least once)
-local attempts = 0
-repeat
-    attempts += 1
-    local success = attempts >= 3
-until success
 
 -- continue (Luau extension — skips to next iteration)
 for i = 1, 10 do
@@ -218,82 +133,35 @@ for i = 1, 100 do
 end
 ```
 
-### String Manipulation
+### String Interpolation
 
 ```luau
--- String interpolation (Luau extension — backtick strings)
--- ALWAYS prefer this over .. concatenation
+-- ALWAYS prefer backtick interpolation over .. concatenation
 local name = "Alice"
 local level = 42
 local message = `{name} reached level {level}!`
-print(message) --> "Alice reached level 42!"
 
 -- Expressions in interpolation
 local price = 19.99
 local tax = 0.08
-print(`Total: ${price * (1 + tax)}`) --> "Total: $21.5892"
-
--- Common string functions
-print(string.len("hello"))           --> 5
-print(string.upper("hello"))         --> "HELLO"
-print(string.lower("HELLO"))         --> "hello"
-print(string.sub("hello", 2, 4))     --> "ell"
-print(string.rep("ab", 3))           --> "ababab"
-print(string.reverse("hello"))       --> "olleh"
-print(string.byte("A"))              --> 65
-print(string.char(65))               --> "A"
-print(string.find("hello world", "world")) --> 7 11
-print(string.format("%.2f", 3.14159))     --> "3.14"
-
--- String patterns (NOT regex — see Common Idioms section)
-local matched = string.match("score: 42", "%d+")
-print(matched) --> "42"
+print(`Total: ${price * (1 + tax)}`)
 
 -- string.split (Luau extension)
 local parts = string.split("a,b,c", ",")
--- parts = {"a", "b", "c"}
 ```
 
-### Math Operations
+### Luau-Specific Math Extensions
 
 ```luau
--- Arithmetic
-local sum = 10 + 5       --> 15
-local diff = 10 - 5      --> 5
-local product = 10 * 5   --> 50
-local quotient = 10 / 3  --> 3.3333...
 local intDiv = 10 // 3   --> 3 (floor division, Luau extension)
-local remainder = 10 % 3 --> 1
-local power = 2 ^ 10     --> 1024
-
--- Math library
-print(math.abs(-5))              --> 5
-print(math.ceil(3.2))            --> 4
-print(math.floor(3.8))           --> 3
-print(math.max(1, 5, 3))         --> 5
-print(math.min(1, 5, 3))         --> 1
-print(math.sqrt(16))             --> 4
-print(math.pi)                   --> 3.14159...
-print(math.huge)                 --> inf
-print(math.clamp(15, 0, 10))     --> 10 (Luau extension)
-print(math.sign(-7))             --> -1 (Luau extension)
-print(math.round(3.5))           --> 4 (Luau extension)
-
--- Random numbers
-print(math.random())             --> [0, 1) float
-print(math.random(10))           --> [1, 10] integer
-print(math.random(5, 15))        --> [5, 15] integer
+print(math.clamp(15, 0, 10))  --> 10 (Luau extension)
+print(math.sign(-7))          --> -1 (Luau extension)
+print(math.round(3.5))        --> 4 (Luau extension)
 
 -- For better randomness, use Random.new()
 local rng = Random.new()
-print(rng:NextNumber())          --> [0, 1) float
-print(rng:NextInteger(1, 100))   --> [1, 100] integer
-
--- Trigonometry (radians)
-print(math.sin(math.pi / 2))    --> 1
-print(math.cos(0))               --> 1
-print(math.rad(180))             --> pi
-print(math.deg(math.pi))        --> 180
+print(rng:NextNumber())         --> [0, 1) float
+print(rng:NextInteger(1, 100))  --> [1, 100] integer
 ```
 
 ---
@@ -506,27 +374,15 @@ local partType: Enum.PartType = Enum.PartType.Ball
 
 ## Roblox-Specific Patterns
 
-### Instance Creation and Manipulation
+### Instance Creation
 
 ```luau
--- Creating instances
+-- Create, configure, then ALWAYS set Parent last (avoids replication race)
 local part = Instance.new("Part")
 part.Name = "Floor"
 part.Size = Vector3.new(50, 1, 50)
-part.Position = Vector3.new(0, 0, 0)
 part.Anchored = true
-part.Material = Enum.Material.Grass
-part.BrickColor = BrickColor.new("Bright green")
-part.Parent = workspace -- ALWAYS set Parent last for performance
-
--- Cloning
-local clone = part:Clone()
-clone.Name = "FloorCopy"
-clone.Position = Vector3.new(0, 0, 60)
-clone.Parent = workspace
-
--- Destroying
-part:Destroy() -- removes from hierarchy and disconnects all events
+part.Parent = workspace -- Parent last!
 ```
 
 ### Service Access
