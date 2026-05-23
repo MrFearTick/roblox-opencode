@@ -34,11 +34,9 @@ Player Leaves -->  Server saves to DataStore     -->  Data persists for next ses
 
 ---
 
-## 2. DataStoreService Basics (Reference Only)
+## 2. Raw DataStore API (Reference Only)
 
-> **This section explains the underlying API. For production games, skip to section 4 (ProfileStore).**
-
-DataStoreService is the built-in Roblox API for cloud key-value storage. Each DataStore is identified by a name, and each entry is identified by a string key.
+> **For production games, skip to section 4 (ProfileStore).** This section exists so you understand what's underneath. Do NOT implement manual auto-save, session locking, BindToClose handlers, or retry logic — ProfileStore handles all of this.
 
 ### Core Methods
 
@@ -50,219 +48,24 @@ DataStoreService is the built-in Roblox API for cloud key-value storage. Each Da
 | `UpdateAsync(key, callback)` | Atomic read-modify-write | **Preferred for saves** |
 | `RemoveAsync(key)` | Delete a key | Returns the old value |
 
-`UpdateAsync` is preferred over `SetAsync` because it is atomic -- it reads the current value, lets you transform it, and writes it back in a single operation. This prevents race conditions where two servers overwrite each other.
+`UpdateAsync` is preferred over `SetAsync` because it is atomic — reads current value, transforms it, writes back in one operation.
 
-### Basic Save/Load (Complete Example)
+### Leaderstats (Display Pattern)
 
-```luau
--- ServerScript in ServerScriptService
-local Players = game:GetService("Players")
-local DataStoreService = game:GetService("DataStoreService")
-
-local playerDataStore = DataStoreService:GetDataStore("PlayerData_v1")
-
--- Default data for new players
-local DEFAULT_DATA = {
-    Cash = 0,
-    Level = 1,
-    Experience = 0,
-    Inventory = {},
-}
-
--- In-memory cache: Player -> data table
-local playerDataCache: { [Player]: { [string]: any } } = {}
-
-local function loadPlayerData(player: Player): { [string]: any }?
-    local key = `Player_{player.UserId}`
-
-    local success, result = pcall(function()
-        return playerDataStore:GetAsync(key)
-    end)
-
-    if not success then
-        warn(`[DataStore] Failed to load data for {player.Name}: {result}`)
-        return nil
-    end
-
-    -- Merge with defaults so new fields get default values
-    local data = result or {}
-    for field, default in DEFAULT_DATA do
-        if data[field] == nil then
-            data[field] = default
-        end
-    end
-
-    return data
-end
-
-local function savePlayerData(player: Player): boolean
-    local data = playerDataCache[player]
-    if not data then
-        return false
-    end
-
-    local key = `Player_{player.UserId}`
-
-    local success, err = pcall(function()
-        playerDataStore:UpdateAsync(key, function(_oldData)
-            return data
-        end)
-    end)
-
-    if not success then
-        warn(`[DataStore] Failed to save data for {player.Name}: {err}`)
-        return false
-    end
-
-    return true
-end
-
--- Load on join
-Players.PlayerAdded:Connect(function(player: Player)
-    local data = loadPlayerData(player)
-
-    if not data then
-        -- Kick if data fails to load to prevent overwriting with defaults
-        player:Kick("Failed to load your data. Please rejoin.")
-        return
-    end
-
-    playerDataCache[player] = data
-    -- Set up leaderstats, UI, etc. using data
-end)
-
--- Save on leave
-Players.PlayerRemoving:Connect(function(player: Player)
-    savePlayerData(player)
-    playerDataCache[player] = nil
-end)
-
--- Auto-save every 5 minutes
-task.spawn(function()
-    while true do
-        task.wait(300)
-        for player, _data in playerDataCache do
-            task.spawn(savePlayerData, player)
-        end
-    end
-end)
-
--- Save all on server shutdown
-game:BindToClose(function()
-    local threads: { thread } = {}
-    for player, _data in playerDataCache do
-        local t = task.spawn(savePlayerData, player)
-        table.insert(threads, t)
-    end
-    -- BindToClose has a 30-second timeout; parallel saves finish faster
-    -- task.spawn already fires them concurrently, so just wait briefly
-    task.wait(5)
-end)
-```
-
----
-
-## 3. Leaderstats Pattern (Reference Only)
-
-> **This section uses raw DataStore for illustration. In production, use ProfileStore (section 4) for persistence and set up leaderstats from the profile data.**
-
-The "leaderstats" pattern is the standard Roblox convention for showing player stats on the in-game leaderboard (the tab/playerlist).
-
-**How it works:** Create a Folder named exactly `"leaderstats"` inside the Player object. Add IntValue or StringValue children -- their names and values appear on the leaderboard automatically.
-
-### Leaderstats with DataStore Persistence
+Leaderstats are IntValue/StringValue children of a Folder named "leaderstats" parented to the Player. Roblox automatically displays these on the in-game leaderboard.
 
 ```luau
--- ServerScript in ServerScriptService
-local Players = game:GetService("Players")
-local DataStoreService = game:GetService("DataStoreService")
+local leaderstats = Instance.new("Folder")
+leaderstats.Name = "leaderstats"
+leaderstats.Parent = player
 
-local dataStore = DataStoreService:GetDataStore("LeaderstatsData_v1")
-
-local function setupLeaderstats(player: Player, data: { [string]: number })
-    local leaderstats = Instance.new("Folder")
-    leaderstats.Name = "leaderstats"
-    leaderstats.Parent = player
-
-    local cash = Instance.new("IntValue")
-    cash.Name = "Cash"
-    cash.Value = data.Cash or 0
-    cash.Parent = leaderstats
-
-    local level = Instance.new("IntValue")
-    level.Name = "Level"
-    level.Value = data.Level or 1
-    level.Parent = leaderstats
-end
-
-local function getLeaderstatsData(player: Player): { [string]: number }
-    local leaderstats = player:FindFirstChild("leaderstats")
-    if not leaderstats then
-        return {}
-    end
-
-    return {
-        Cash = leaderstats:FindFirstChild("Cash") and leaderstats.Cash.Value or 0,
-        Level = leaderstats:FindFirstChild("Level") and leaderstats.Level.Value or 1,
-    }
-end
-
-local function savePlayer(player: Player)
-    local data = getLeaderstatsData(player)
-    local key = `Player_{player.UserId}`
-
-    local success, err = pcall(function()
-        dataStore:UpdateAsync(key, function()
-            return data
-        end)
-    end)
-
-    if not success then
-        warn(`[Leaderstats] Save failed for {player.Name}: {err}`)
-    end
-end
-
-Players.PlayerAdded:Connect(function(player: Player)
-    local key = `Player_{player.UserId}`
-
-    local success, data = pcall(function()
-        return dataStore:GetAsync(key)
-    end)
-
-    if not success then
-        player:Kick("Data load error. Please rejoin.")
-        return
-    end
-
-    setupLeaderstats(player, data or {})
-end)
-
-Players.PlayerRemoving:Connect(savePlayer)
-
--- Auto-save interval
-task.spawn(function()
-    while true do
-        task.wait(300)
-        for _, player in Players:GetPlayers() do
-            task.spawn(savePlayer, player)
-        end
-    end
-end)
-
--- BindToClose for server shutdown
-game:BindToClose(function()
-    for _, player in Players:GetPlayers() do
-        task.spawn(savePlayer, player)
-    end
-    task.wait(5)
-end)
+local cash = Instance.new("IntValue")
+cash.Name = "Cash"
+cash.Value = profile.Data.Cash  -- populated from ProfileStore
+cash.Parent = leaderstats
 ```
 
-**Key points:**
-- The folder MUST be named `"leaderstats"` (lowercase, exact spelling).
-- Use `IntValue` for numbers, `StringValue` for text.
-- Changes to these Value objects update the leaderboard in real time.
-- Leaderstats are visible to all players -- do not put sensitive data here.
+Leaderstats are display-only. The authoritative data lives in ProfileStore's `profile.Data`. Sync leaderstats back to profile on save.
 
 ---
 
@@ -302,7 +105,7 @@ Run `wally install`, then require from the Packages folder.
 local Players = game:GetService("Players")
 local ServerScriptService = game:GetService("ServerScriptService")
 
-local ProfileService = require(ServerScriptService.Packages.ProfileService)
+local ProfileStore = require(ServerScriptService.Packages.ProfileStore)
 -- Adjust the require path based on where you installed it
 
 -- Define the profile template (default data for new players)
@@ -322,11 +125,11 @@ local PROFILE_TEMPLATE = {
     },
 }
 
--- Create the ProfileStore (wraps a DataStore)
-local ProfileStore = ProfileService.GetProfileStore("PlayerProfiles_v1", PROFILE_TEMPLATE)
+-- Create the store (wraps a DataStore with session locking)
+local PlayerStore = ProfileStore.New("PlayerProfiles_v1", PROFILE_TEMPLATE)
 
 -- Active profiles cache
-local Profiles: { [Player]: typeof(ProfileStore:LoadProfileAsync("")) } = {}
+local Profiles: { [Player]: typeof(PlayerStore:LoadProfileAsync("")) } = {}
 
 local function onProfileLoaded(player: Player, profile)
     -- Session lock: if the profile was stolen by another server, release and kick
@@ -364,7 +167,7 @@ local function onProfileLoaded(player: Player, profile)
 end
 
 Players.PlayerAdded:Connect(function(player: Player)
-    local profile = ProfileStore:LoadProfileAsync(
+    local profile = PlayerStore:LoadProfileAsync(
         `Player_{player.UserId}`,
         "ForceLoad" -- Wait until the session lock is acquired
     )

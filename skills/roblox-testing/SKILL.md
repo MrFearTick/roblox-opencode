@@ -26,16 +26,6 @@ Testing in Roblox is non-trivial because game code depends heavily on engine ser
 
 > **TestEZ is vendored in this harness** at `vendor/testez/` (v0.4.2, Apache 2.0). The agent can place it into your project when you need testing. No Wally install required.
 
-### Installation via Wally (alternative)
-Add TestEZ as a dev dependency in `wally.toml`:
-
-```toml
-[dev-dependencies]
-TestEZ = "roblox/testez@0.4.1"
-```
-
-Run `wally install` and the package lands in `DevPackages/`. Sync it into Studio via your Rojo project file (typically under `ReplicatedStorage.DevPackages`).
-
 ### Test File Conventions
 
 - Test files use the suffix `.spec.luau` (e.g., `CurrencyManager.spec.luau`).
@@ -573,39 +563,7 @@ Automated tests do not cover everything. Use this checklist for manual playtesti
 
 ## 9. Test Organization
 
-### Rojo Project Structure (Recommended)
-
-```
-project/
-  src/
-    server/
-      DataManager.luau
-      InventoryManager.luau
-      CurrencyManager.luau
-    shared/
-      DamageCalc.luau
-      Utils.luau
-    client/
-      UIController.luau
-  tests/
-    server/
-      DataManager.spec.luau
-      InventoryManager.spec.luau
-      CurrencyManager.spec.luau
-    shared/
-      DamageCalc.spec.luau
-      Utils.spec.luau
-    mocks/
-      MockDataStoreService.luau
-      MockPlayers.luau
-      MockSignal.luau
-      MockRemoteEvent.luau
-    init.spec.luau            -- test runner entry
-  wally.toml
-  default.project.json
-```
-
-### Studio-Only Structure
+### Project Structure
 
 ```
 ServerScriptService/
@@ -629,80 +587,6 @@ ServerScriptService/
 | Test name | `it("should deduct gold on purchase")` |
 
 ---
-
-## 10. CI/CD Integration
-
-### Running Tests Headlessly with Lune
-
-[Lune](https://lune-org.github.io/docs) is a standalone Luau runtime that can execute TestEZ specs outside of Roblox Studio.
-
-Create a test runner script (`run-tests.luau`):
-
-```luau
-local process = require("@lune/process")
-local fs = require("@lune/fs")
-
--- Require TestEZ (bundled or installed via pesde/wally for lune)
-local TestEZ = require("./DevPackages/TestEZ")
-
--- Point TestEZ at your spec files
-local results = TestEZ.TestBootstrap:run({
-    -- List directories containing .spec.luau files
-    "./tests/server",
-    "./tests/shared",
-})
-
-if results.failureCount > 0 then
-    process.exit(1)
-end
-```
-
-### GitHub Actions Workflow
-
-```yaml
-name: Roblox CI
-
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-
-jobs:
-  lint-and-test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Aftman (toolchain manager)
-        uses: ok-nick/setup-aftman@v0.4.2
-
-      - name: Install Wally packages
-        run: wally install
-
-      - name: Selene lint
-        run: selene src/ tests/
-
-      - name: StyLua format check
-        run: stylua --check src/ tests/
-
-      - name: Run TestEZ tests via Lune
-        run: lune run run-tests.luau
-
-      - name: Build Roblox place file
-        run: rojo build default.project.json -o game.rbxl
-```
-
-### Aftman Tool Versions (`aftman.toml`)
-
-```toml
-[tools]
-rojo = "rojo-rbx/rojo@7.4.4"
-wally = "UpliftGames/wally@0.3.2"
-selene = "Kampfkarren/selene@0.27.1"
-stylua = "JohnnyMorganz/StyLua@0.20.0"
-lune = "lune-org/lune@0.8.9"
-```
 
 ---
 

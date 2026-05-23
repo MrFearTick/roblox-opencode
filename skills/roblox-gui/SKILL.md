@@ -228,18 +228,7 @@ icon.Parent = frame
 
 ### ScrollingFrame
 
-Scrollable container for lists and grids.
-
-```luau
-local scroll = Instance.new("ScrollingFrame")
-scroll.Size = UDim2.new(1, 0, 1, 0)
-scroll.CanvasSize = UDim2.new(0, 0, 0, 0)           -- set dynamically
-scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y     -- auto-grow vertically
-scroll.ScrollBarThickness = 6
-scroll.ScrollBarImageColor3 = Color3.fromRGB(200, 200, 200)
-scroll.BackgroundTransparency = 1
-scroll.Parent = frame
-```
+See **section 14 (ScrollingFrame Patterns)** for full coverage including AutomaticCanvasSize, UIListLayout integration, and elastic overscroll.
 
 ### ViewportFrame
 
@@ -385,22 +374,7 @@ You can nest both: a frame with absolute position containing children managed by
 
 ## 5. Responsive Design
 
-### Scale vs Offset
-
-`UDim2` has two components: `Scale` (proportion of parent, 0-1) and `Offset` (fixed pixels).
-
-```luau
--- BAD: hardcoded pixels, breaks on different screens
-frame.Size = UDim2.new(0, 400, 0, 300)
-frame.Position = UDim2.new(0, 100, 0, 50)
-
--- GOOD: proportional, adapts to any screen
-frame.Size = UDim2.new(0.3, 0, 0.4, 0)
-frame.Position = UDim2.new(0.5, 0, 0.5, 0)
-frame.AnchorPoint = Vector2.new(0.5, 0.5)
-```
-
-**Rule:** Use Scale for Position and Size. Use Offset only for small fixed elements (icons, padding, stroke thickness).
+Scale vs Offset rules are in **Design Guidelines** above. This section covers constraints and adaptive patterns.
 
 ### UISizeConstraint
 
@@ -621,222 +595,59 @@ ContextActionService:UnbindAction("Interact")
 
 ---
 
-## 8. Common UI Patterns
+## 8. Common UI Patterns (Skeletons)
 
 ### Shop Interface
 
-Pattern: item card in a grid with hover effect, tween animations, server-validated purchase.
+**Problem:** Display purchasable items in a grid with hover feedback and server-validated purchase.
 
-```luau
--- Pattern: Shop item card with hover + purchase
-local function createItemCard(item, parent)
-    local card = Instance.new("Frame")
-    card.Name = item.id
-    card.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
-    card.BorderSizePixel = 0
-    Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
-    Instance.new("UIStroke", card).Color = Color3.fromRGB(60, 60, 90)
+**Structure:**
+- ScrollingFrame + UIGridLayout (container)
+  - Frame per item (card)
+    - ImageLabel (icon)
+    - TextLabel (name + price)
+    - TextButton (buy) with hover tween
 
-    local icon = Instance.new("ImageLabel", card)
-    icon.Size = UDim2.new(0.6, 0, 0, 70)
-    icon.Position = UDim2.new(0.5, 0, 0, 10)
-    icon.AnchorPoint = Vector2.new(0.5, 0)
-    icon.Image = item.icon
-    icon.ScaleType = Enum.ScaleType.Fit
-    icon.BackgroundTransparency = 1
-
-    local nameLabel = Instance.new("TextLabel", card)
-    nameLabel.Size = UDim2.new(0.9, 0, 0, 22)
-    nameLabel.Position = UDim2.new(0.5, 0, 0, 88)
-    nameLabel.AnchorPoint = Vector2.new(0.5, 0)
-    nameLabel.Text = item.name
-    nameLabel.Font = Enum.Font.GothamBold
-    nameLabel.TextColor3 = Color3.fromRGB(240, 240, 240)
-    nameLabel.BackgroundTransparency = 1
-
-    local buyBtn = Instance.new("TextButton", card)
-    buyBtn.Size = UDim2.new(0.8, 0, 0, 32)
-    buyBtn.Position = UDim2.new(0.5, 0, 1, -10)
-    buyBtn.AnchorPoint = Vector2.new(0.5, 1)
-    buyBtn.Text = `${item.price} Coins`
-    buyBtn.Font = Enum.Font.GothamBold
-    buyBtn.TextColor3 = Color3.fromRGB(240, 240, 240)
-    buyBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 70)
-    Instance.new("UICorner", buyBtn).CornerRadius = UDim.new(0, 6)
-
-    -- Hover: TweenService color shift
-    buyBtn.MouseEnter:Connect(function()
-        TweenService:Create(buyBtn, TweenInfo.new(0.15), {
-            BackgroundColor3 = Color3.fromRGB(0, 180, 85),
-        }):Play()
-    end)
-    buyBtn.MouseLeave:Connect(function()
-        TweenService:Create(buyBtn, TweenInfo.new(0.15), {
-            BackgroundColor3 = Color3.fromRGB(0, 150, 70),
-        }):Play()
-    end)
-
-    -- Click: server-validated purchase
-    buyBtn.Activated:Connect(function()
-        local success = purchaseRemote:InvokeServer(item.id)
-        if success then
-            buyBtn.Text = "OWNED"
-            buyBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-        end
-    end)
-
-    card.Parent = parent
-    return card
-end
-```
+**Key properties:** UIGridLayout.CellSize for responsive cards, UICorner for rounded edges, TweenService for hover color shift. Purchase via RemoteFunction (server validates, returns success/fail).
 
 ### Health Bar
 
-Pattern: bar container + fill with Size scale, color thresholds, damage trail effect.
+**Problem:** Show player health with color thresholds and damage trail effect.
 
-```luau
--- Pattern: Health bar with color thresholds + damage trail
-local function createHealthBar(parent)
-    local container = Instance.new("Frame", parent)
-    container.Size = UDim2.new(0.25, 0, 0, 28)
-    container.Position = UDim2.new(0.5, 0, 0.92, 0)
-    container.AnchorPoint = Vector2.new(0.5, 0.5)
-    container.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-    Instance.new("UICorner", container).CornerRadius = UDim.new(0, 6)
+**Structure:**
+- Frame (container, dark background)
+  - Frame (damage trail, red, tweens to match fill with delay)
+  - Frame (fill, green→yellow→red based on %)
 
-    local damageBar = Instance.new("Frame", container)
-    damageBar.Size = UDim2.new(1, 0, 1, 0)
-    damageBar.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-    Instance.new("UICorner", damageBar).CornerRadius = UDim.new(0, 6)
-
-    local fillBar = Instance.new("Frame", container)
-    fillBar.Size = UDim2.new(1, 0, 1, 0)
-    fillBar.BackgroundColor3 = Color3.fromRGB(0, 200, 80)
-    fillBar.ZIndex = 2
-    Instance.new("UICorner", fillBar).CornerRadius = UDim.new(0, 6)
-
-    local healthText = Instance.new("TextLabel", container)
-    healthText.Size = UDim2.new(1, 0, 1, 0)
-    healthText.Text = "100 / 100"
-    healthText.Font = Enum.Font.GothamBold
-    healthText.TextColor3 = Color3.fromRGB(240, 240, 240)
-    healthText.BackgroundTransparency = 1
-    healthText.ZIndex = 3
-
-    return container, fillBar, damageBar, healthText
-end
-
-local function updateHealthBar(fillBar, damageBar, healthText, health, maxHealth)
-    local fraction = math.clamp(health / maxHealth, 0, 1)
-    local color = if fraction > 0.6
-        then Color3.fromRGB(0, 200, 80)
-        elseif fraction > 0.3
-        then Color3.fromRGB(230, 180, 0)
-        else Color3.fromRGB(200, 40, 40)
-
-    healthText.Text = `${math.ceil(health)} / ${maxHealth}`
-
-    TweenService:Create(fillBar, TweenInfo.new(0.4), {
-        Size = UDim2.new(fraction, 0, 1, 0),
-        BackgroundColor3 = color,
-    }):Play()
-
-    -- Damage trail: shrinks slower for trailing effect
-    task.delay(0.3, function()
-        TweenService:Create(damageBar, TweenInfo.new(0.8), {
-            Size = UDim2.new(fraction, 0, 1, 0),
-        }):Play()
-    end)
-end
-```
+**Key logic:** On health change, tween fill Size.X.Scale to `health/maxHealth`. Color lerp between green/yellow/red at thresholds (0.6, 0.3). Damage trail: delay 0.3s then tween to match fill.
 
 ### Notification Toast
 
-Pattern: toast notification with slide-in animation and auto-dismiss via `task.delay`.
+**Problem:** Temporary message that slides in, stays briefly, slides out.
 
-```luau
--- Pattern: Toast notification with slide-in + auto-dismiss
-local function showToast(message, duration)
-    duration = duration or 3
+**Structure:**
+- Frame (anchored off-screen right)
+  - TextLabel (message)
+  - UICorner + UIStroke
 
-    local toast = Instance.new("Frame")
-    toast.Size = UDim2.new(1, 0, 0, 50)
-    toast.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
-    toast.BackgroundTransparency = 1
-    toast.BorderSizePixel = 0
-    toast.LayoutOrder = tick()
-    Instance.new("UICorner", toast).CornerRadius = UDim.new(0, 8)
-
-    local label = Instance.new("TextLabel", toast)
-    label.Size = UDim2.new(1, -24, 1, 0)
-    label.Position = UDim2.new(0, 12, 0, 0)
-    label.Text = message
-    label.Font = Enum.Font.GothamBold
-    label.TextColor3 = Color3.fromRGB(240, 240, 240)
-    label.BackgroundTransparency = 1
-    label.TextTransparency = 1
-
-    toast.Parent = toastContainer -- UIListLayout parent
-
-    TweenService:Create(toast, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-        BackgroundTransparency = 0.1,
-    }):Play()
-    TweenService:Create(label, TweenInfo.new(0.3), { TextTransparency = 0 }):Play()
-
-    task.delay(duration, function()
-        local fade = TweenService:Create(toast, TweenInfo.new(0.3), { BackgroundTransparency = 1 })
-        fade:Play()
-        fade.Completed:Connect(function() toast:Destroy() end)
-    end)
-end
-```
+**Key logic:** Tween Position from off-screen to visible, task.delay(3), tween back out, Destroy. Queue multiple toasts with vertical offset.
 
 ### Dialog / Popup System
 
-Pattern: modal overlay, tween open/close, BindableEvent for async result.
+**Problem:** Modal dialog with backdrop, title, body, confirm/cancel buttons.
 
-```luau
--- Pattern: Modal dialog with BindableEvent for async result
-local function showDialog(title, message)
-    screenGui.Enabled = true
-    dialogTitle.Text = title
-    dialogMessage.Text = message
+**Structure:**
+- Frame (backdrop, full-screen, semi-transparent black)
+  - Frame (dialog card, centered, 0.4x0.3 scale)
+    - TextLabel (title)
+    - TextLabel (body)
+    - Frame (button row)
+      - TextButton (confirm)
+      - TextButton (cancel)
 
-    overlay.BackgroundTransparency = 1
-    dialogFrame.Size = UDim2.new(0, 0, 0, 0)
-    TweenService:Create(overlay, TweenInfo.new(0.2), { BackgroundTransparency = 0.5 }):Play()
-    TweenService:Create(dialogFrame, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-        Size = UDim2.new(0.35, 0, 0, 180),
-    }):Play()
-
-    -- Wait for user response via BindableEvent
-    local resolve = Instance.new("BindableEvent")
-    local result = false
-    local c1 = confirmBtn.Activated:Connect(function()
-        result = true
-        resolve:Fire()
-    end)
-    local c2 = cancelBtn.Activated:Connect(function()
-        resolve:Fire()
-    end)
-    resolve.Event:Wait()
-    c1:Disconnect()
-    c2:Disconnect()
-    resolve:Destroy()
-
-    TweenService:Create(overlay, TweenInfo.new(0.15), { BackgroundTransparency = 1 }):Play()
-    local closeTween = TweenService:Create(dialogFrame, TweenInfo.new(0.15), {
-        Size = UDim2.new(0, 0, 0, 0),
-    })
-    closeTween:Play()
-    closeTween.Completed:Wait()
-    screenGui.Enabled = false
-    return result
-end
-```
+**Key logic:** Show/hide by toggling Visible + tween BackgroundTransparency on backdrop. Return result via Promise or callback. Destroy on close.
 
 ---
-
 ## 9. Best Practices
 
 ### Positioning and Sizing

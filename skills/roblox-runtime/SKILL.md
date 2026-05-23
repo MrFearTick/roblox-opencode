@@ -1,14 +1,13 @@
 ---
 name: roblox-runtime
-description: Task scheduler, replication, streaming, network ownership, performance optimization.
-last_reviewed: 2026-05-21
+description: >
+  StreamingEnabled, performance optimization, memory management, object pooling, mobile targets.
+last_reviewed: 2026-05-22
 ---
 
 <!-- Source: brockmartin/roblox-game-skill (MIT) -->
 
-# Roblox Runtime
-
-# Roblox Performance Optimization Reference
+# Roblox Runtime & Performance
 
 ## 1. Overview
 
@@ -198,37 +197,6 @@ end)
 
 -- When no longer needed:
 HeartbeatManager:Unregister("EnemyAI")
-```
-
-### Cache GetService Calls
-
-```lua
--- GOOD: cache at the top of the script
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
-
--- BAD: calling GetService repeatedly
-RunService.Heartbeat:Connect(function()
-	local players = game:GetService("Players"):GetPlayers() -- wasteful
-end)
-```
-
-### Avoid FindFirstChild in Tight Loops
-
-```lua
--- BAD: searching the hierarchy every frame
-RunService.Heartbeat:Connect(function()
-	local hrp = workspace:FindFirstChild("Player1"):FindFirstChild("HumanoidRootPart")
-end)
-
--- GOOD: cache the reference once
-local hrp = character:WaitForChild("HumanoidRootPart")
-RunService.Heartbeat:Connect(function()
-	if hrp and hrp.Parent then
-		-- use cached reference
-	end
-end)
 ```
 
 ### Table Pre-allocation

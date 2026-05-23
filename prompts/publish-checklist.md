@@ -7,7 +7,7 @@ You are verifying a Roblox game is ready to publish. Work through every category
 ## 1. Data & Persistence
 
 - [ ] **DataStore save/load tested** — Player data saves on leave and loads on rejoin correctly
-- [ ] **Session locking verified** — Using ProfileService or equivalent; no concurrent data corruption
+- [ ] **Session locking verified** — Using ProfileStore or equivalent; no concurrent data corruption
 - [ ] **BindToClose implemented** — Server saves data before shutdown (game close, server hop)
 - [ ] **Data migration plan** — If updating an existing game, schema migration handles old data formats
 - [ ] **Edge case: disconnect during save** — Data not lost if player disconnects mid-save

@@ -658,78 +658,12 @@ lighting.FogColor = Color3.fromRGB(15, 15, 30)
 
 ---
 
-## Sound Design
+## Sound + Animation Sync
 
-### Sound Objects
-
-```luau
-local sound = Instance.new("Sound")
-sound.SoundId = "rbxassetid://111222333"
-sound.Volume = 0.8            -- 0 to 10
-sound.PlaybackSpeed = 1       -- 0.5 = half speed, 2 = double speed
-sound.Looped = false
-sound.RollOffMode = Enum.RollOffMode.InverseTapered
-sound.RollOffMaxDistance = 100
-sound.RollOffMinDistance = 10
-sound.Parent = somePart       -- positional audio: parent to a Part
-sound:Play()
-```
-
-### SoundService for Global/Ambient Audio
-
-```luau
-local SoundService = game:GetService("SoundService")
-
--- Ambient music (non-positional, parent to SoundService or a ScreenGui)
-local bgm = Instance.new("Sound")
-bgm.SoundId = "rbxassetid://444555666"
-bgm.Volume = 0.3
-bgm.Looped = true
-bgm.Parent = SoundService
-bgm:Play()
-```
-
-### Positional Audio
-
-Parent a `Sound` to a `Part` in the workspace. The engine automatically applies 3D rolloff based on `RollOffMinDistance`, `RollOffMaxDistance`, and `RollOffMode`.
-
-```luau
--- Waterfall ambient sound
-local waterSound = Instance.new("Sound")
-waterSound.SoundId = "rbxassetid://777888999"
-waterSound.Volume = 1
-waterSound.Looped = true
-waterSound.RollOffMode = Enum.RollOffMode.InverseTapered
-waterSound.RollOffMinDistance = 10
-waterSound.RollOffMaxDistance = 80
-waterSound.Parent = workspace.Waterfall.MainPart
-waterSound:Play()
-```
-
-### SoundGroup for Volume Control
-
-`SoundGroup` lets you control volume for categories of sounds (SFX, Music, Ambient) from one place, which is ideal for settings menus.
-
-```luau
-local sfxGroup = Instance.new("SoundGroup")
-sfxGroup.Name = "SFX"
-sfxGroup.Volume = 1
-sfxGroup.Parent = SoundService
-
-local musicGroup = Instance.new("SoundGroup")
-musicGroup.Name = "Music"
-musicGroup.Volume = 0.5
-musicGroup.Parent = SoundService
-
--- Assign sounds to groups
-hitSound.SoundGroup = sfxGroup
-bgm.SoundGroup = musicGroup
-
--- Player adjusts SFX volume:
-sfxGroup.Volume = 0.3  -- all SFX sounds update
-```
+For general sound (SoundService, positional audio, SoundGroups), use mcp-roblox-docs. This section covers only the animation-specific pattern.
 
 ### Triggering Sounds with Animation Events
+
 
 ```luau
 -- Sync a footstep sound to walk animation markers

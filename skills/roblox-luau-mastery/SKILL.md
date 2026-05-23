@@ -42,43 +42,23 @@ The agent will recommend these when relevant. You can veto by saying "use my own
 
 ## Core Concepts
 
-### Variables
-
-All variables must be declared `local`. Global variables pollute the shared environment.
+### Luau Extensions (not in Lua 5.1)
 
 ```luau
--- Constants use UPPER_CASE by convention
-local MAX_HEALTH = 100
-local RESPAWN_TIME = 5
-
--- Compound assignment (Luau extension, not in Lua 5.1)
-local score = 0
+-- Compound assignment operators
 score += 10
 score -= 5
 score *= 2
-score /= 2
-```
 
-### Functions
-
-```luau
--- Type annotations on parameters and returns
-local function calculateDamage(baseDamage: number, multiplier: number): number
-    return baseDamage * multiplier
+-- continue keyword (skips to next iteration)
+for i = 1, 10 do
+    if i % 2 == 0 then continue end
+    print(i)
 end
 
--- Variadic functions
-local function logMessage(prefix: string, ...: any)
-    local args = { ... }
-    local message = `{prefix}: {table.concat(args, ", ")}`
-    print(message)
-end
-
--- Multiple return values
-local function getPosition(): (number, number, number)
-    return 10, 20, 30
-end
-local x, y, z = getPosition()
+-- Generalized iteration (preferred over ipairs/pairs)
+for index, item in items do print(index, item) end
+for key, value in stats do print(key, value) end
 ```
 
 ### Tables
@@ -107,33 +87,7 @@ print(items[1]) --> "sword"
 print(#items)   --> 3 (length operator)
 ```
 
-### Control Flow
 
-```luau
--- Generalized iteration (Luau extension — preferred over ipairs/pairs)
-local items = { "sword", "shield", "potion" }
-for index, item in items do
-    print(index, item)
-end
-
--- Dictionary iteration
-local stats = { health = 100, mana = 50, stamina = 75 }
-for key, value in stats do
-    print(key, value)
-end
-
--- continue (Luau extension — skips to next iteration)
-for i = 1, 10 do
-    if i % 2 == 0 then continue end
-    print(i) -- prints odd numbers only
-end
-
--- break exits the loop
-for i = 1, 100 do
-    if i > 10 then break end
-    print(i)
-end
-```
 
 ### String Interpolation
 
@@ -174,7 +128,6 @@ Luau uses **gradual typing**: types are optional and can be added incrementally.
 
 **2025-2026 Updates:**
 - **New Type Solver** (GA Nov 2025): faster, more accurate type checking. `--!nonstrict` is now the default for all scripts.
-- **`const` keyword**: defines constant bindings with static enforcement of immutability.
 - **Parallel Luau** (mature): Actor-based multithreading with `SharedTable` for cross-Actor data. Use `task.synchronize()` / `task.desynchronize()` to switch contexts.
 
 ### Basic Type Annotations

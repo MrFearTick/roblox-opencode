@@ -416,72 +416,24 @@ end)
 
 ---
 
-## 5. Rewarded Video Ads (2026)
+## 5. Rewarded Video Ads
 
-Roblox's ad monetization system allows players to opt-in to watching a short video ad in exchange for an in-game reward. Revenue is generated per completed view.
-
-### Implementation via AdService
-
-```luau
--- ServerScriptService/RewardedAdService.lua
-local AdService = game:GetService("AdService")
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
--- RemoteEvent for client to request an ad
-local requestAdEvent = Instance.new("RemoteEvent")
-requestAdEvent.Name = "RequestRewardedAd"
-requestAdEvent.Parent = ReplicatedStorage
-
-local adCooldowns: { [number]: number } = {}
-local COOLDOWN_SECONDS = 300 -- 5-minute cooldown between ads
-
-requestAdEvent.OnServerEvent:Connect(function(player: Player)
-	local now = os.time()
-	local lastAd = adCooldowns[player.UserId] or 0
-
-	if now - lastAd < COOLDOWN_SECONDS then
-		local remaining = COOLDOWN_SECONDS - (now - lastAd)
-		warn(`[Ads] {player.Name} on cooldown, {remaining}s remaining`)
-		return
-	end
-
-	-- Grant the reward after confirmed view
-	local leaderstats = player:FindFirstChild("leaderstats")
-	if leaderstats then
-		local coins = leaderstats:FindFirstChild("Coins")
-		if coins then
-			coins.Value += 25 -- reward equivalent to 3-10 Robux value
-		end
-	end
-
-	adCooldowns[player.UserId] = now
-	print(`[Ads] Granted rewarded ad bonus to {player.Name}`)
-end)
-
-Players.PlayerRemoving:Connect(function(player: Player)
-	adCooldowns[player.UserId] = nil
-end)
-```
+Players opt-in to watching a short video ad in exchange for an in-game reward. Revenue per completed view. API is via `AdService` — use mcp-roblox-docs for current method signatures (API has changed during beta).
 
 ### Placement Best Practices
 
-| Placement | Why It Works |
-|---|---|
-| **Between rounds** | Natural break; player is already waiting |
-| **In lobby / waiting area** | Low-stakes moment; player has nothing else to do |
-| **After death (optional revive)** | High motivation to watch; clear value proposition |
-| **Daily bonus multiplier** | "Watch ad to double your daily reward" |
-| **Cosmetic preview** | "Watch ad to try this skin for 1 hour" |
+- **Between rounds** — natural break, player is already waiting
+- **In lobby / waiting area** — low-stakes moment, nothing else to do
+- **After death (optional revive)** — high motivation, clear value proposition
+- **Daily bonus multiplier** — "Watch ad to double your daily reward"
 
-**Avoid:** Mid-gameplay interruptions, mandatory ads, ads that block progression.
+**Avoid:** mid-gameplay interruptions, mandatory ads, ads that block progression.
 
-### Recommended Reward Value
+### Reward Value
 
-- **3-10 Robux equivalent value** per completed view
-- Too low: players will not bother watching
-- Too high: undermines paid product sales
-- Sweet spot: meaningful but not game-breaking (e.g., 25-50 coins when 100 coins costs 25 Robux)
+- Target 3-10 Robux equivalent value per completed view
+- Too low: players won't bother. Too high: undermines paid products.
+- Implement a server-side cooldown (5+ minutes) to prevent spam
 
 ---
 
