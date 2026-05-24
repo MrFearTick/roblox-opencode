@@ -1,87 +1,88 @@
 import type { Plugin } from "@opencode-ai/plugin"
-import { existsSync, mkdirSync, readFileSync, writeFileSync, cpSync } from "fs"
-import { join, dirname } from "path"
 
 const VERSION = "1.0.0"
 const MARKER_BEGIN = `<!-- roblox-opencode ${VERSION} BEGIN — managed block, edits inside will be overwritten -->`
 const MARKER_END = "<!-- roblox-opencode END -->"
 
-export const RobloxOpenCode: Plugin = async ({ directory, client }) => {
-  const projectDir = directory
-  const pkgDir = dirname(dirname(new URL(import.meta.url).pathname))
-
-  // Always copy commands — they're tiny and harmless.
-  // This ensures /setup-game, /init, etc. are available even in new projects.
-  const commandsDir = join(projectDir, ".opencode", "commands")
+/**
+ * Plugin entry point.
+ * On first load: copies commands to global config (~/.config/opencode/commands/).
+ * This ensures /setup-game etc. are available even if opencode has never been
+ * launched in a Roblox project before.
+ */
+export const RobloxOpenCode: Plugin = async () => {
+  // Copy commands to global config (idempotent — skips if already there)
   try {
-    if (!existsSync(commandsDir)) {
-      mkdirSync(commandsDir, { recursive: true })
+    const { existsSync, mkdirSync, readdirSync, copyFileSync } = await import("fs")
+    const { join, homedir } = await import("path")
+    const os = await import("os")
+
+    const pkgDir = join(import.meta.dirname ?? new URL(".", import.meta.url).pathname, "..")
+    const srcDir = join(pkgDir, "commands")
+    const destDir = join(os.homedir(), ".config", "opencode", "commands")
+
+    if (existsSync(srcDir)) {
+      mkdirSync(destDir, { recursive: true })
+      const files = readdirSync(srcDir).filter(f => f.endsWith(".md"))
+      for (const file of files) {
+        const dest = join(destDir, file)
+        // Always overwrite — commands may be updated between versions
+        copyFileSync(join(srcDir, file), dest)
+      }
     }
-    cpSync(join(pkgDir, "commands"), commandsDir, { recursive: true })
   } catch {
-    // non-fatal
+    // non-fatal — commands may already exist or dir may be read-only
   }
 
   return {}
 }
 
 /**
- * Setup orchestrator — copies files, writes config, initializes the project.
- * Called by the /setup command.
+ * Setup orchestrator — copies skills, vendor libs, writes config.
+ * Called by the /setup-game command (which is a global command, always available).
  */
 export async function runSetup(directory: string) {
-  const pkgDir = dirname(new URL(import.meta.url).pathname.replace("/src", ""))
+  const { existsSync, mkdirSync, readFileSync, writeFileSync, cpSync } = await import("fs")
+  const { join } = await import("path")
+
+  const pkgDir = join(import.meta.dirname ?? new URL(".", import.meta.url).pathname, "..")
   const projectDir = directory
 
   const steps: { name: string; fn: () => void }[] = []
 
   // Step 1: Copy skills
   steps.push({
-    name: "Copy skills to .opencode/skills/",
+    name: "Copy 12 skills to .opencode/skills/",
     fn: () => {
       const src = join(pkgDir, "skills")
       const dest = join(projectDir, ".opencode", "skills")
+      if (!existsSync(src)) throw new Error(`skills/ not found in plugin at ${src}`)
       mkdirSync(dest, { recursive: true })
       cpSync(src, dest, { recursive: true })
     },
   })
 
-  // Step 2: Copy commands
-  steps.push({
-    name: "Copy commands to .opencode/commands/",
-    fn: () => {
-      const src = join(pkgDir, "commands")
-      const dest = join(projectDir, ".opencode", "commands")
-      mkdirSync(dest, { recursive: true })
-      cpSync(src, dest, { recursive: true })
-    },
-  })
-
-  // Step 3: Copy vendor libs
+  // Step 2: Copy vendor libs
   steps.push({
     name: "Copy vendor libraries to project",
     fn: () => {
       const src = join(pkgDir, "vendor")
       const dest = join(projectDir, "vendor")
+      if (!existsSync(src)) throw new Error(`vendor/ not found in plugin at ${src}`)
       mkdirSync(dest, { recursive: true })
       cpSync(src, dest, { recursive: true })
     },
   })
 
-  // Step 4: Write LSP config to opencode.json
+  // Step 3: Write LSP config to opencode.json
   steps.push({
     name: "Write LSP config (luau-lsp)",
     fn: () => {
       const configPath = join(projectDir, "opencode.json")
       let config: Record<string, unknown> = {}
       if (existsSync(configPath)) {
-        try {
-          config = JSON.parse(readFileSync(configPath, "utf-8"))
-        } catch {
-          // Corrupted config, start fresh
-        }
+        try { config = JSON.parse(readFileSync(configPath, "utf-8")) } catch { /* corrupted, start fresh */ }
       }
-
       config.lsp = {
         ...(config.lsp as Record<string, unknown> || {}),
         luau: {
@@ -89,19 +90,18 @@ export async function runSetup(directory: string) {
           extensions: [".luau"],
         },
       }
-
       writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n")
     },
   })
 
-  // Step 5: Write core block to AGENTS.md
+  // Step 4: Write core block to AGENTS.md
   steps.push({
     name: "Write core block to AGENTS.md",
     fn: () => {
       const agentsPath = join(projectDir, "AGENTS.md")
       const corePath = join(pkgDir, "core", "roblox-core.md")
+      if (!existsSync(corePath)) throw new Error(`core/roblox-core.md not found in plugin at ${corePath}`)
       const coreContent = readFileSync(corePath, "utf-8")
-
       const block = `${MARKER_BEGIN}\n${coreContent}\n${MARKER_END}`
 
       let agentsContent = ""
@@ -109,46 +109,32 @@ export async function runSetup(directory: string) {
         agentsContent = readFileSync(agentsPath, "utf-8")
       }
 
-      if (agentsContent.includes("<!-- roblox-opencode") || agentsContent.includes("<!-- roblox-pi")) {
-        // Replace existing managed block
-        const beginPattern = /<!-- roblox-opencode[^>]*BEGIN[^>]*-->/
-        const endPattern = /<!-- roblox-opencode END -->/
+      // Replace existing managed block or append
+      const beginPattern = /<!-- roblox-opencode[^>]*BEGIN[^>]*-->/
+      const endPattern = /<!-- roblox-opencode END -->/
+      const oldBeginPattern = /<!-- roblox-pi[^>]*BEGIN[^>]*-->/
+      const oldEndPattern = /<!-- roblox-pi END -->/
 
-        // Also handle old roblox-pi markers
-        const oldBeginPattern = /<!-- roblox-pi[^>]*BEGIN[^>]*-->/
-        const oldEndPattern = /<!-- roblox-pi END -->/
-
-        let newContent = agentsContent
-
-        if (beginPattern.test(newContent) && endPattern.test(newContent)) {
-          newContent = newContent.replace(
-            new RegExp(`${beginPattern.source}[\\s\\S]*?${endPattern.source}`),
-            block
-          )
-        } else if (oldBeginPattern.test(newContent) && oldEndPattern.test(newContent)) {
-          newContent = newContent.replace(
-            new RegExp(`${oldBeginPattern.source}[\\s\\S]*?${oldEndPattern.source}`),
-            block
-          )
-        } else {
-          // Markers in content but regex didn't match — append
-          newContent = newContent.trimEnd() + "\n\n" + block + "\n"
-        }
-
-        writeFileSync(agentsPath, newContent)
+      let newContent: string
+      if (beginPattern.test(agentsContent) && endPattern.test(agentsContent)) {
+        newContent = agentsContent.replace(
+          new RegExp(`${beginPattern.source}[\\s\\S]*?${endPattern.source}`),
+          block
+        )
+      } else if (oldBeginPattern.test(agentsContent) && oldEndPattern.test(agentsContent)) {
+        newContent = agentsContent.replace(
+          new RegExp(`${oldBeginPattern.source}[\\s\\S]*?${oldEndPattern.source}`),
+          block
+        )
       } else {
-        // No existing markers — create or append
-        const content = agentsContent
-          ? agentsContent.trimEnd() + "\n\n" + block + "\n"
-          : block + "\n"
-        writeFileSync(agentsPath, content)
+        newContent = agentsContent ? agentsContent.trimEnd() + "\n\n" + block + "\n" : block + "\n"
       }
+      writeFileSync(agentsPath, newContent)
     },
   })
 
   // Execute all steps
   const results: { step: string; status: "ok" | "error"; error?: string }[] = []
-
   for (const step of steps) {
     try {
       step.fn()
@@ -161,47 +147,31 @@ export async function runSetup(directory: string) {
       })
     }
   }
-
   return results
 }
 
 /**
- * Write MCP config to opencode.json. Called by /setup after checking prerequisites.
+ * Write MCP config to opencode.json. Called by /setup-game after checking prerequisites.
  */
-export function writeMcpConfig(
+export async function writeMcpConfig(
   directory: string,
   servers: { studio?: boolean; robloxDocs?: boolean }
 ) {
+  const { existsSync, readFileSync, writeFileSync } = await import("fs")
+  const { join } = await import("path")
   const configPath = join(directory, "opencode.json")
   let config: Record<string, unknown> = {}
   if (existsSync(configPath)) {
-    try {
-      config = JSON.parse(readFileSync(configPath, "utf-8"))
-    } catch {
-      // corrupted, start fresh
-    }
+    try { config = JSON.parse(readFileSync(configPath, "utf-8")) } catch { /* corrupted */ }
   }
-
   const mcp: Record<string, unknown> = {}
-
   if (servers.studio) {
-    mcp.studio = {
-      type: "local",
-      command: ["npx", "-y", "@anthropic/studio-mcp"],
-      enabled: true,
-    }
+    mcp.studio = { type: "local", command: ["npx", "-y", "@anthropic/studio-mcp"], enabled: true }
   }
-
   if (servers.robloxDocs) {
-    mcp["roblox-docs"] = {
-      type: "local",
-      command: ["uvx", "mcp-roblox-docs"],
-      enabled: true,
-    }
+    mcp["roblox-docs"] = { type: "local", command: ["uvx", "mcp-roblox-docs"], enabled: true }
   }
-
   config.mcp = { ...(config.mcp as Record<string, unknown> || {}), ...mcp }
-
   writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n")
 }
 
