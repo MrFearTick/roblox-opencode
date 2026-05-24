@@ -134,6 +134,7 @@ export async function runSetup(directory: string) {
           block
         )
       } else {
+        // No existing block — append below existing content
         newContent = agentsContent ? agentsContent.trimEnd() + "\n\n" + block + "\n" : block + "\n"
       }
       writeFileSync(agentsPath, newContent)
@@ -155,31 +156,6 @@ export async function runSetup(directory: string) {
     }
   }
   return results
-}
-
-/**
- * Write MCP config to opencode.json. Called by /setup-game after checking prerequisites.
- */
-export async function writeMcpConfig(
-  directory: string,
-  servers: { studio?: boolean; robloxDocs?: boolean }
-) {
-  const { existsSync, readFileSync, writeFileSync } = await import("fs")
-  const { join } = await import("path")
-  const configPath = join(directory, "opencode.json")
-  let config: Record<string, unknown> = {}
-  if (existsSync(configPath)) {
-    try { config = JSON.parse(readFileSync(configPath, "utf-8")) } catch { /* corrupted */ }
-  }
-  const mcp: Record<string, unknown> = {}
-  if (servers.studio) {
-    mcp.studio = { type: "local", command: ["npx", "-y", "@weppy/roblox-mcp"], enabled: true }
-  }
-  if (servers.robloxDocs) {
-    mcp["roblox-docs"] = { type: "local", command: ["uvx", "mcp-roblox-docs"], enabled: true }
-  }
-  config.mcp = { ...(config.mcp as Record<string, unknown> || {}), ...mcp }
-  writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n")
 }
 
 export default {

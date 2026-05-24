@@ -129,27 +129,6 @@ ${MARKER_END}`;
   }
   return results;
 }
-async function writeMcpConfig(directory, servers) {
-  const { existsSync, readFileSync, writeFileSync } = await import("fs");
-  const { join } = await import("path");
-  const configPath = join(directory, "opencode.json");
-  let config = {};
-  if (existsSync(configPath)) {
-    try {
-      config = JSON.parse(readFileSync(configPath, "utf-8"));
-    } catch {
-    }
-  }
-  const mcp = {};
-  if (servers.studio) {
-    mcp.studio = { type: "local", command: ["npx", "-y", "@weppy/roblox-mcp"], enabled: true };
-  }
-  if (servers.robloxDocs) {
-    mcp["roblox-docs"] = { type: "local", command: ["uvx", "mcp-roblox-docs"], enabled: true };
-  }
-  config.mcp = { ...config.mcp || {}, ...mcp };
-  writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n");
-}
 var index_default = {
   id: "roblox-opencode",
   server: RobloxOpenCode
@@ -157,6 +136,5 @@ var index_default = {
 export {
   RobloxOpenCode,
   index_default as default,
-  runSetup,
-  writeMcpConfig
+  runSetup
 };

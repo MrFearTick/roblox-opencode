@@ -1,6 +1,7 @@
 ---
+name: roblox-debug
 description: "Iterative debug loop for Luau/Roblox issues"
-agent: build
+tags: [roblox, debug, luau, troubleshooting]
 ---
 
 # /debug — Iterative Debug Loop

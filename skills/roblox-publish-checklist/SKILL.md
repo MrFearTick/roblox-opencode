@@ -1,6 +1,7 @@
 ---
+name: roblox-publish-checklist
 description: "Pre-publish verification gauntlet for Roblox games"
-agent: build
+tags: [roblox, publish, checklist, verification]
 ---
 
 # /publish-checklist — Pre-Publish Verification

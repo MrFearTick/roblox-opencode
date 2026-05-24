@@ -1,6 +1,7 @@
 ---
-description: "Code review with security, performance, and monetization lenses"
-agent: build
+name: roblox-code-review
+description: "Code review with security, performance, and monetization lenses for Roblox projects"
+tags: [roblox, code-review, security, performance, monetization]
 ---
 
 # /code-review — Code Quality Review
