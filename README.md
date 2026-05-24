@@ -4,11 +4,17 @@ OpenCode plugin for Roblox/Luau development. Makes AI coding assistants competen
 
 ## Install
 
-```
-opencode plugin roblox-opencode
+Add to your `opencode.json`:
+
+```json
+{
+  "plugin": ["roblox-opencode"]
+}
 ```
 
-Then run `opencode` once to activate (copies commands globally), then `/setup-game` in your project to configure.
+Restart opencode. The plugin auto-installs from npm on startup.
+
+Then run `/setup-game` in your project to configure.
 
 ## What's included
 
@@ -57,11 +63,15 @@ After setup, the plugin is dormant. The 15 skills do all the work — the AI loa
 
 ## Update
 
+Update the version in `opencode.json` (or use `"roblox-opencode"` for latest), then restart opencode.
+
+To force re-setup in a project (overwrites skills, vendor, config):
+
 ```
-opencode plugin roblox-opencode --force
+/setup-game
 ```
 
-Re-runs setup. Skills, vendor libs, and config are overwritten. Content outside managed markers in AGENTS.md is preserved.
+Content outside managed markers in AGENTS.md is preserved.
 
 ## License
 
