@@ -1,8 +1,8 @@
 ---
 name: roblox-sync
 description: >
-  Studio Script Sync setup walkthrough. Canonical sync path for roblox-pi.
-  Sacrificial layer if Roblox swaps the feature.
+  Studio Script Sync setup, troubleshooting, mode detection.
+  Canonical filesystem sync path for Roblox development.
 last_reviewed: 2026-05-21
 ---
 

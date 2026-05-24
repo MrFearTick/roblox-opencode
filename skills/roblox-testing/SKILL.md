@@ -1,6 +1,6 @@
 ---
 name: roblox-testing
-description: jest-lua, mocks, lune runner, test patterns for Roblox.
+description: TestEZ BDD testing, mocks, test patterns, coverage strategies for Roblox.
 last_reviewed: 2026-05-21
 ---
 
