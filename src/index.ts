@@ -7,13 +7,44 @@ const MARKER_BEGIN = `<!-- roblox-opencode ${VERSION} BEGIN — managed block, e
 const MARKER_END = "<!-- roblox-opencode END -->"
 
 export const RobloxOpenCode: Plugin = async ({ directory, client }) => {
-  const pkgDir = dirname(new URL(import.meta.url).pathname.replace("/src", ""))
   const projectDir = directory
+
+  // Only activate for Roblox projects — check for .luau files or existing markers
+  const agentsPath = join(projectDir, "AGENTS.md")
+  let isRobloxProject = false
+
+  if (existsSync(agentsPath)) {
+    const content = readFileSync(agentsPath, "utf-8")
+    if (content.includes("<!-- roblox-opencode") || content.includes("<!-- roblox-pi")) {
+      isRobloxProject = true
+    }
+  }
+
+  if (!isRobloxProject) {
+    // Check for .luau files in the project
+    try {
+      const { readdirSync, statSync } = await import("fs")
+      const hasLuau = (dir, depth) => {
+        if (depth > 2) return false
+        for (const entry of readdirSync(dir, { withFileTypes: true })) {
+          if (entry.name.startsWith(".")) continue
+          const full = join(dir, entry.name)
+          if (entry.isFile() && entry.name.endsWith(".luau")) return true
+          if (entry.isDirectory() && hasLuau(full, depth + 1)) return true
+        }
+        return false
+      }
+      isRobloxProject = hasLuau(projectDir, 0)
+    } catch {
+      // can't read directory, stay silent
+    }
+  }
+
+  if (!isRobloxProject) return {} // silent — not a Roblox project
 
   client.app.log.info(`roblox-opencode v${VERSION} loaded`)
 
   // Check if AGENTS.md has current version markers
-  const agentsPath = join(projectDir, "AGENTS.md")
   if (existsSync(agentsPath)) {
     const content = readFileSync(agentsPath, "utf-8")
     const hasCurrentMarkers = content.includes(MARKER_BEGIN)
@@ -21,17 +52,11 @@ export const RobloxOpenCode: Plugin = async ({ directory, client }) => {
 
     if (hasOldMarkers) {
       client.app.log.warn("roblox-opencode AGENTS.md markers are outdated. Run /setup to update.")
-    } else if (!hasCurrentMarkers && !content.includes("<!-- roblox-pi")) {
-      // No markers at all — first time
-      client.app.log.info("roblox-opencode not configured yet. Run /setup to initialize.")
     }
-  } else {
-    client.app.log.info("No AGENTS.md found. Run /setup to initialize roblox-opencode.")
   }
 
   return {
     "session.created": async () => {
-      // On session start, check if setup has been run
       const skillsDir = join(projectDir, ".opencode", "skills")
       if (!existsSync(skillsDir)) {
         client.app.log.info("roblox-opencode skills not installed. Run /setup to initialize.")

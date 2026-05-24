@@ -5,21 +5,41 @@ var VERSION = "1.0.0";
 var MARKER_BEGIN = `<!-- roblox-opencode ${VERSION} BEGIN \u2014 managed block, edits inside will be overwritten -->`;
 var MARKER_END = "<!-- roblox-opencode END -->";
 var RobloxOpenCode = async ({ directory, client }) => {
-  const pkgDir = dirname(new URL(import.meta.url).pathname.replace("/src", ""));
   const projectDir = directory;
-  client.app.log.info(`roblox-opencode v${VERSION} loaded`);
   const agentsPath = join(projectDir, "AGENTS.md");
+  let isRobloxProject = false;
+  if (existsSync(agentsPath)) {
+    const content = readFileSync(agentsPath, "utf-8");
+    if (content.includes("<!-- roblox-opencode") || content.includes("<!-- roblox-pi")) {
+      isRobloxProject = true;
+    }
+  }
+  if (!isRobloxProject) {
+    try {
+      const { readdirSync, statSync } = await import("fs");
+      const hasLuau = (dir, depth) => {
+        if (depth > 2) return false;
+        for (const entry of readdirSync(dir, { withFileTypes: true })) {
+          if (entry.name.startsWith(".")) continue;
+          const full = join(dir, entry.name);
+          if (entry.isFile() && entry.name.endsWith(".luau")) return true;
+          if (entry.isDirectory() && hasLuau(full, depth + 1)) return true;
+        }
+        return false;
+      };
+      isRobloxProject = hasLuau(projectDir, 0);
+    } catch {
+    }
+  }
+  if (!isRobloxProject) return {};
+  client.app.log.info(`roblox-opencode v${VERSION} loaded`);
   if (existsSync(agentsPath)) {
     const content = readFileSync(agentsPath, "utf-8");
     const hasCurrentMarkers = content.includes(MARKER_BEGIN);
     const hasOldMarkers = content.includes("<!-- roblox-opencode") && !hasCurrentMarkers;
     if (hasOldMarkers) {
       client.app.log.warn("roblox-opencode AGENTS.md markers are outdated. Run /setup to update.");
-    } else if (!hasCurrentMarkers && !content.includes("<!-- roblox-pi")) {
-      client.app.log.info("roblox-opencode not configured yet. Run /setup to initialize.");
     }
-  } else {
-    client.app.log.info("No AGENTS.md found. Run /setup to initialize roblox-opencode.");
   }
   return {
     "session.created": async () => {
