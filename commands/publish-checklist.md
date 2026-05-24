@@ -1,3 +1,8 @@
+---
+description: "Pre-publish verification gauntlet for Roblox games"
+agent: build
+---
+
 # /publish-checklist — Pre-Publish Verification
 
 You are verifying a Roblox game is ready to publish. Work through every category below. For each item, check it and note PASS/FAIL/SKIP with a brief explanation.

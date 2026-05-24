@@ -1,3 +1,8 @@
+---
+description: "Bootstrap a new Roblox project or scan an existing one"
+agent: build
+---
+
 # /init
 
 `npm init` for Roblox. Project bootstrap — greenfield scaffold or existing-project recon.
@@ -10,7 +15,7 @@ Read the project directory. Determine if it's empty (or only has Studio default 
 
 ### If empty or Studio defaults only:
 
-Drop the universal scaffold from `skills/roblox-architecture/references/`. Standard layout:
+Drop the universal scaffold. Standard layout:
 
 ```
 ServerScriptService/
@@ -35,11 +40,11 @@ Note: "Standard layout dropped. Rename or restructure to taste."
 
 ### If non-empty (existing project):
 
-The agent scans the project via context-mode index. Detect existing patterns dynamically:
+Scan the project structure. Detect existing patterns dynamically:
 
 - What save system is used? (ProfileStore, raw DataStore, custom wrapper)
 - What signal/event library? (Signal (RbxUtil), custom, RBXScriptSignal)
-- What component system? (CollectionService tags, Knit, custom)
+- What component system? (CollectionService tags, custom)
 - Naming conventions? (PascalCase modules, camelCase locals, etc.)
 - Service architecture? (singleton services, flat scripts, framework)
 
@@ -56,10 +61,6 @@ If sync isn't already detected (no `.luau` files on disk), walk the user through
 3. Repeat for each container with scripts
 
 See `skills/roblox-sync/SKILL.md` for full walkthrough.
-
-## Step 4: Index with context-mode
-
-Run `ctx_index` on the project directory so future sessions can query project structure without re-reading every file.
 
 ## Done
 

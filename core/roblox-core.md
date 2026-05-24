@@ -1,4 +1,4 @@
-# roblox-pi Core Block
+# roblox-opencode Core Block
 # Written to AGENTS.md by /setup between version markers.
 # Budget: ~1.2k tokens. Every line must earn its place.
 
@@ -32,8 +32,8 @@
 
 ## 3. Capabilities Boundary
 
-roblox-pi handles: Luau code, scripts, modules, remotes, data, UI logic, game architecture.
-roblox-pi does NOT handle: 3D model generation, mesh creation, animation authoring, terrain sculpting, pixel-perfect UI design. These are Studio's domain — use blockout Parts with descriptive names and let the user detail visually.
+roblox-opencode handles: Luau code, scripts, modules, remotes, data, UI logic, game architecture.
+roblox-opencode does NOT handle: 3D model generation, mesh creation, animation authoring, terrain sculpting, pixel-perfect UI design. These are Studio's domain — use blockout Parts with descriptive names and let the user detail visually.
 
 ## 4. Skill Routing Corrections
 
@@ -69,13 +69,13 @@ Do not prefix verified responses with "Verified: ..." — that noise trains user
 
 **Vendored libraries** (auto-placed with mention): ProfileStore, Trove, Signal (RbxUtil), Promise, Comm, Component.
 - Agent mentions the choice. User can revert or say "use my own."
-- Before auto-placing, query context-mode for existing equivalents. If found, skip auto-place and mention why.
+- Before auto-placing, query project index for existing equivalents. If found, skip auto-place and mention why.
 
 **Vendored tools** (recommended when relevant, not auto-placed): t (runtime type checking), TestEZ (testing).
 - Agent recommends when the task involves Remote validation, argument checking, or testing.
 - Agent does NOT auto-place — requires user buy-in.
 
-**Anything else**: full consent. Agent explains, asks via ask-user-question, places only on yes.
+**Anything else**: full consent. Agent explains, asks via user prompts, places only on yes.
 
 ## 9. Slash Commands
 
@@ -88,4 +88,4 @@ When the user's task matches a slash command's purpose, suggest it:
 
 ## Version
 
-roblox-pi 0.1.0
+roblox-opencode 1.0.0

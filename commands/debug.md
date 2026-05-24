@@ -1,3 +1,8 @@
+---
+description: "Iterative debug loop for Luau/Roblox issues"
+agent: build
+---
+
 # /debug — Iterative Debug Loop
 
 You are performing an iterative debug loop on a Roblox project. Follow these 7 steps. The loop has a maximum of **5 iterations** before escalating to the user.
@@ -6,14 +11,11 @@ You are performing an iterative debug loop on a Roblox project. Follow these 7 s
 
 ## Step 1: Error Gathering
 
-**MCP Full mode:**
-Use `get_console_output` or `get_playtest_output` to automatically retrieve the latest error.
+**Sync Mode (files on disk):**
+Read the error from the user's description or ask them to paste the error message, stack trace, and any relevant output.
 
-**MCP Standard mode:**
-Use `get_console_output` to read the console.
-
-**Offline mode:**
-Ask the user to paste the error message, stack trace, and any relevant output.
+**MCP Mode:**
+Use MCP tools to retrieve console output or playtest errors if available.
 
 Record:
 - Error message (exact text)
@@ -24,20 +26,13 @@ Record:
 
 ## Step 2: Code Discovery
 
-**MCP Full mode:**
-Use `grep_scripts` to search for the error message, relevant function names, or the script from the stack trace. Use `get_script_source` to read the full file.
-
-**MCP Standard mode:**
-Ask the user to share the relevant script content.
-
-**Offline mode:**
-Ask the user to share the relevant scripts or describe where the error occurs.
+Read the relevant script(s) from the synced folder (or via MCP if in MCP-Only Mode). Search for the error message, relevant function names, or the script from the stack trace.
 
 ---
 
 ## Step 3: Root Cause Analysis
 
-Analyze the error against common Roblox issue categories. Load `references/sharp-edges.md` for known gotchas.
+Analyze the error against common Roblox issue categories. Load `skills/roblox-sharp-edges/SKILL.md` for known gotchas.
 
 Categorize the error:
 - **Syntax** — Missing `end`, typos, incorrect syntax
@@ -66,23 +61,9 @@ If the fix involves architectural changes (not just a line fix), explain the cha
 
 ## Step 5: Apply & Test
 
-**MCP Full mode:**
-1. Use `execute_luau` to apply the fix
-2. Use `start_playtest` to run the game
-3. Use `get_playtest_output` to check for errors
-4. Verify the specific error is resolved
+Write the fix to the synced file. If MCP is available, use it to verify the fix applies cleanly. If playtest is running, check for errors after the fix.
 
-**MCP Standard mode:**
-1. Use `run_code` to apply the fix
-2. Use `start_stop_play` to test
-3. Use `get_console_output` to verify
-
-**Offline mode:**
-1. Output the corrected code with clear before/after diff
-2. Provide manual test instructions:
-   - What to do to reproduce the original error
-   - What the expected behavior should be after the fix
-   - Any related scenarios to also test
+If in offline mode, provide the corrected code with clear before/after diff and manual test instructions.
 
 ---
 

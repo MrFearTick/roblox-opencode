@@ -1,35 +1,69 @@
-# roblox-pi
+# roblox-opencode
 
-Opinionated Pi harness for Roblox/Luau development.
-
-Vanilla LLMs are bad at Roblox. They hallucinate APIs, use deprecated patterns, ignore security fundamentals. roblox-pi fixes that.
+OpenCode plugin for Roblox/Luau development. Makes AI coding assistants competent at building Roblox games.
 
 ## Install
 
 ```
-pi install npm:roblox-pi
-/setup
-/init
+opencode plugin roblox-opencode
 ```
 
-## What it does
+Then run `/setup` in your project to initialize.
 
-- 12 knowledge skills covering Roblox architecture, networking, data, security, and more
-- Curated extension stack (8 packages) bringing Pi to full coding-agent parity
-- Built-in Studio MCP integration
-- Luau LSP diagnostics on every write
-- 8 vendored libraries (ProfileStore, Trove, Signal, Promise, Comm, Component, t, TestEZ)
+## What's included
+
+**12 skills** (loaded on-demand by the AI):
+- roblox-luau-mastery — Luau syntax, idioms, type system
+- roblox-gui — UI layout, mobile-first design, reactive frameworks
+- roblox-animation-vfx — Animation, particles, effects
+- roblox-networking — Security hardening, validation, rate limiting
+- roblox-data — ProfileStore, DataStores, persistence patterns
+- roblox-testing — TestEZ, BDD patterns, test strategy
+- roblox-tooling — Studio MCP, luau-lsp, diagnostics
+- roblox-architecture — Service hierarchy, 7 foundational patterns
+- roblox-runtime — RunService, StreamingEnabled, memory management
+- roblox-sharp-edges — 9 production footguns by severity
+- roblox-monetization — GamePasses, DevProducts, TOS compliance
+- roblox-sync — Script Sync setup and troubleshooting
+
+**5 commands:**
+- `/setup` — Initialize environment (config, sync, MCP, LSP)
+- `/init` — Bootstrap a new project or scan an existing one
+- `/code-review` — Review with security/performance/monetization lenses
+- `/publish-checklist` — Pre-ship verification gauntlet
+- `/debug` — Iterative debug loop for Luau/Roblox issues
+- `/diagnose` — Sync sanity check
+
+**Vendor libraries** (auto-placed with mention):
+- ProfileStore — Data persistence with session locking
+- Trove — Cleanup/lifecycle management
+- Signal — Typed custom signals (Sleitnick/RbxUtil)
+- Promise — Async flow control (evaera)
+- Comm — Typed client-server remotes (Sleitnick/RbxUtil)
+- Component — CollectionService tag binding (Sleitnick/RbxUtil)
+- t — Runtime type checking (osyrisrblx, recommended)
+- TestEZ — BDD testing framework (Roblox, recommended)
+
+## How it works
+
+The plugin is a setup orchestrator. On install, it copies skills, commands, and vendor libs to your project, writes LSP and MCP config to `opencode.json`, and writes the core directives block to `AGENTS.md`.
+
+After setup, the plugin is dormant. The 12 skills do all the work — the AI loads them on-demand based on what you're working on.
 
 ## Prerequisites
 
-- [Pi](https://pi.dev) installed
-- Roblox Studio with Script Sync (Beta) enabled
-- `luau-lsp` on PATH (for diagnostics)
+- [luau-lsp](https://github.com/JohnnyMorganz/luau-lsp) — Luau diagnostics (setup checks and guides install)
+- [Roblox Studio](https://www.roblox.com/create) — With Script Sync enabled
+- uv (optional) — For mcp-roblox-docs live API reference
 
-## Status
+## Update
 
-Early development. Not yet published.
+```
+opencode plugin roblox-opencode --force
+```
+
+Re-runs setup. Skills, commands, and config are overwritten. Content outside managed markers in AGENTS.md is preserved.
 
 ## License
 
-MIT. Vendored libraries carry their own licenses in `vendor/LICENSES/`.
+MIT

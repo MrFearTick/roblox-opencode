@@ -1,3 +1,8 @@
+---
+description: "Code review with security, performance, and monetization lenses"
+agent: build
+---
+
 # /code-review — Code Quality Review
 
 You are performing a code quality review on a Roblox project. Follow these 8 steps. Apply the relevant lens based on what changed. Don't apply all lenses every time.
@@ -6,14 +11,7 @@ You are performing a code quality review on a Roblox project. Follow these 8 ste
 
 ## Step 1: Project Scan
 
-**MCP Full mode:**
-Use `get_project_structure` and `get_file_tree` for a full overview. Use `grep_scripts` to survey script count, naming patterns, and organization.
-
-**MCP Standard mode:**
-Use `run_code` to list project structure.
-
-**Offline mode:**
-Ask the user to describe the project structure, or ask them to share a file tree.
+Read the project directory structure. Survey script count, naming patterns, and organization.
 
 Record:
 - Total script count
@@ -36,25 +34,20 @@ Check:
 
 ## Step 3: Code Quality Scan
 
-**MCP Full mode:**
-Use `grep_scripts` to search for anti-patterns:
+Search for anti-patterns:
 
 ```
 Deprecated APIs:
-- grep_scripts for "wait(" → replace with task.wait()
-- grep_scripts for "spawn(" → replace with task.spawn()
-- grep_scripts for "delay(" → replace with task.delay()
-- grep_scripts for "settings()" → deprecated
+- wait( → replace with task.wait()
+- spawn( → replace with task.spawn()
+- delay( → replace with task.delay()
 
 Code smells:
-- grep_scripts for "^local [A-Z]" → global variables (should be module-scoped)
-- grep_scripts for "function.*--" → missing return types on public functions
-- grep_scripts for "Instance.new(" in client scripts → should be server-created
-- grep_scripts for "while true" → unbounded loops
+- Global variables (should be module-scoped)
+- Missing type annotations on public functions
+- Instance.new() in client scripts (should be server-created)
+- while true without task.wait() (unbounded loops)
 ```
-
-**Offline mode:**
-Ask user to share scripts for manual review.
 
 Check for:
 - Deprecated APIs (`wait()`, `spawn()`, `delay()`)
@@ -74,7 +67,7 @@ Check:
 - Dependency direction — Do modules depend on abstractions, not concrete implementations?
 - Circular requires — Any modules that depend on each other?
 - Separation of concerns — Server vs Client logic properly separated
-- Framework usage — If using Knit/vFramework, is it used consistently?
+- Framework usage — If using a framework, is it used consistently?
 - Configuration — Hardcoded values should be in config modules
 
 ---
@@ -88,7 +81,7 @@ Quick scan for:
 - Missing rate limiting on remotes
 - ProcessReceipt implementation correctness
 
-> **For a deep security review, run the Security Lens below or recommend `/code-review --lens security`.**
+> **For a deep security review, run the Security Lens below.**
 
 ---
 
@@ -102,7 +95,7 @@ Quick scan for:
 - Unanchored parts without collision groups
 - Excessive RemoteEvent usage
 
-> **For a deep performance review, run the Performance Lens below or recommend `/code-review --lens performance`.**
+> **For a deep performance review, run the Performance Lens below.**
 
 ---
 
@@ -110,13 +103,11 @@ Quick scan for:
 
 Rate overall quality:
 
-| Grade | Description |
-|-------|-------------|
-| **A** | Production-ready. Clean, organized, secure, performant |
-| **B** | Solid with minor issues. Safe to ship with minor cleanup |
-| **C** | Functional but needs work. Ship with caveats |
-| **D** | Significant issues. Needs refactoring before ship |
-| **F** | Critical problems. Do not ship in current state |
+- **A** — Production-ready. Clean, organized, secure, performant
+- **B** — Solid with minor issues. Safe to ship with minor cleanup
+- **C** — Functional but needs work. Ship with caveats
+- **D** — Significant issues. Needs refactoring before ship
+- **F** — Critical problems. Do not ship in current state
 
 List findings by severity:
 - **Critical** — Security vulnerabilities, data loss risk, crashes
@@ -150,20 +141,11 @@ For each suggestion:
 
 *Apply this lens when security-relevant code changed: remotes, data persistence, monetization, player input handling, or server authority.*
 
-Use this lens to perform a deep security review. Follow these 8 steps.
-
 ---
 
 ## Security Step 1: Remote Surface Scan
 
-**MCP Full mode:**
-Use `grep_scripts` to search for all `RemoteEvent` and `RemoteFunction` instances. Search for `:FireServer`, `:FireClient`, `:InvokeServer`, `:InvokeClient` to map the full remote surface.
-
-**MCP Standard mode:**
-Ask the user to list all remotes or search the Explorer.
-
-**Offline mode:**
-Ask the user to list all RemoteEvent/RemoteFunction instances and their locations.
+Search for all `RemoteEvent` and `RemoteFunction` instances. Search for `:FireServer`, `:FireClient`, `:InvokeServer`, `:InvokeClient` to map the full remote surface.
 
 Record every remote found with:
 - Name
@@ -225,12 +207,10 @@ Verify all remotes have per-player rate limiting:
 
 Categorize findings:
 
-| Severity | Description |
-|----------|-------------|
-| **Critical** | Exploitable for direct advantage (free currency, item duplication, account takeover) |
-| **High** | Data exposure or corruption possible |
-| **Medium** | Potential for abuse with moderate effort |
-| **Low** | Best practice violation, hard to exploit |
+- **Critical** — Exploitable for direct advantage (free currency, item duplication, account takeover)
+- **High** — Data exposure or corruption possible
+- **Medium** — Potential for abuse with moderate effort
+- **Low** — Best practice violation, hard to exploit
 
 For each vulnerability:
 1. Remote/method affected
@@ -242,14 +222,7 @@ For each vulnerability:
 
 ## Security Step 7: Hardening
 
-**MCP Full mode:**
-Apply hardened code via `execute_luau`. Test that the fix doesn't break legitimate functionality.
-
-**MCP Standard mode:**
-Apply via `run_code`. Test via playtest.
-
-**Offline mode:**
-Provide the hardened code for each vulnerable remote. Include before/after for clarity.
+Apply hardened code for each vulnerable remote. Include before/after for clarity.
 
 Hardening patterns to apply:
 - Server-side validation wrapper for each remote
@@ -273,38 +246,25 @@ Confirm all vulnerabilities addressed:
 
 *Apply this lens when performance-sensitive code changed: large loops, data structures, rendering, network-heavy features, or when the user reports lag.*
 
-Use this lens to perform a deep performance profiling. Follow these 8 steps.
-
 ---
 
 ## Performance Step 1: Project Scan
 
-**MCP Full mode:**
-Use `get_project_structure` to understand scope. Use `grep_scripts` to search for known anti-patterns:
+Search for known anti-patterns:
 - `wait()` and `spawn()` (yield-based, blocks thread)
 - `RunService` loops (Heartbeat, Stepped, RenderStepped frequency)
 - `GetDescendants()` and `GetChildren()` in loops (expensive at scale)
-
-**MCP Standard mode:**
-Use `run_code` to scan for anti-patterns.
-
-**Offline mode:**
-Ask the user for MicroProfiler data or a description of where lag occurs.
 
 ---
 
 ## Performance Step 2: Part Audit
 
-**MCP Full mode:**
-Use `search_objects` to count parts in Workspace. Check for:
+Check for:
 - Total part count (target: <50,000 for mobile, <200,000 for PC)
 - Unanchored parts without assembly (physics chaos)
 - Parts without collision groups (unnecessary collision detection)
 - MeshParts vs Unions vs parts (MeshParts are most efficient)
 - Transparent/reflective parts (rendering cost)
-
-**Offline mode:**
-Ask the user to check Explorer part count and report.
 
 ---
 
@@ -347,12 +307,10 @@ Check:
 
 Generate prioritized list:
 
-| Priority | Description |
-|----------|-------------|
-| **Critical** | Causes crashes or completely unplayable experience |
-| **High** | Noticeable lag, frame drops, or rubber-banding |
-| **Medium** | Suboptimal but functional, wasted resources |
-| **Low** | Minor optimization opportunity |
+- **Critical** — Causes crashes or completely unplayable experience
+- **High** — Noticeable lag, frame drops, or rubber-banding
+- **Medium** — Suboptimal but functional, wasted resources
+- **Low** — Minor optimization opportunity
 
 For each item:
 1. What's slow
@@ -364,13 +322,6 @@ For each item:
 
 ## Performance Step 7: Apply Fixes
 
-**MCP Full mode:**
-Apply fixes via `execute_luau`. Run `start_playtest` and `get_playtest_output` to verify improvement.
-
-**MCP Standard mode:**
-Apply via `run_code`. Test via playtest.
-
-**Offline mode:**
 Provide optimized code for each finding. Include before/after with expected impact.
 
 Common fixes:
@@ -379,7 +330,6 @@ Common fixes:
 - Add `task.wait()` to prevent thread starvation
 - Cache `GetService()` calls
 - Use spatial indexing for distance checks
-- Implement LOD (level of detail) for rendering
 - Batch RemoteEvent updates
 
 ---
@@ -399,20 +349,11 @@ Document improvements:
 
 *Apply this lens when monetization code changed: GamePasses, DevProducts, Premium integration, shop UI, or when reviewing revenue strategy.*
 
-Use this lens to perform a revenue optimization review. Follow these 9 steps.
-
 ---
 
 ## Monetization Step 1: Current State
 
-**MCP Full mode:**
-Use `grep_scripts` to search for `MarketplaceService` usage. Use `get_project_structure` to find all GamePass and DevProduct references. List all existing monetization.
-
-**MCP Standard mode:**
-Ask the user to list all GamePasses and DevProducts.
-
-**Offline mode:**
-Ask the user to provide their current monetization setup.
+Search for `MarketplaceService` usage. Find all GamePass and DevProduct references. List all existing monetization.
 
 Record:
 - All GamePasses (ID, name, price, what it grants)
@@ -448,34 +389,17 @@ Evaluate each consumable:
 
 ## Monetization Step 4: Missing Opportunities
 
-Based on genre best practices (load `references/game-design-roblox.md` and `references/monetization-systems.md`), suggest monetization the game is missing:
+Based on genre best practices, suggest monetization the game is missing.
 
-**Simulator genre typically has:**
-- VIP GamePass (2x currency, exclusive pets)
-- Auto-farm DevProduct
-- Lucky egg / spin DevProducts
-- Season pass
+**Simulator:** VIP GamePass (2x currency, exclusive pets), Auto-farm DevProduct, Lucky egg/spin DevProducts, Season pass.
 
-**Tycoon genre typically has:**
-- VIP GamePass (faster income, exclusive materials)
-- Extra plot slots
-- Cosmetic upgrades
+**Tycoon:** VIP GamePass (faster income, exclusive materials), Extra plot slots, Cosmetic upgrades.
 
-**RPG genre typically has:**
-- Inventory expansion
-- Experience boosts
-- Cosmetic gear
-- Character slots
+**RPG:** Inventory expansion, Experience boosts, Cosmetic gear, Character slots.
 
-**Horror genre typically has:**
-- Skip/co-op passes
-- Cosmetic items (flashlight skins, outfits)
-- Hint system DevProduct
+**Horror:** Skip/co-op passes, Cosmetic items (flashlight skins, outfits), Hint system DevProduct.
 
-**Battle Royale typically has:**
-- Battle pass (seasonal)
-- Cosmetic-only items
-- Victory animations
+**Battle Royale:** Battle pass (seasonal), Cosmetic-only items, Victory animations.
 
 ---
 
@@ -487,17 +411,14 @@ Compare prices against Roblox norms:
 - **Premium** — 499-999 Robux for VIP/lifetime benefits
 - **Consumables** — 10-50 Robux for repeat purchases
 
-Evaluate:
-- Robux-to-value ratio (is the player getting their money's worth?)
-- Price anchoring (is there a premium option that makes mid-tier look reasonable?)
-- Bundle discounts (buying multiple items saves Robux)
+Evaluate Robux-to-value ratio, price anchoring, and bundle discounts.
 
 ---
 
 ## Monetization Step 6: Premium Integration
 
 Check:
-- Premium payouts configured and optimized (higher engagement = more Robux)
+- Premium payouts configured and optimized
 - Premium-exclusive benefits (10-15% bonus, exclusive items, priority queue)
 - Premium benefits clearly communicated to non-Premium players
 - Premium doesn't create unfair advantages in competitive games
@@ -513,24 +434,15 @@ Evaluate if Rewarded Video Ads would fit:
 - Frequency capped (1 ad per X minutes)
 - Value exchange is fair (ad view = meaningful reward)
 
-Suggest specific placement points if ads would work.
-
 ---
 
 ## Monetization Step 8: Ethical Review
 
-Flag any potentially predatory patterns:
-- **Loot boxes / gambling mechanics** — Are odds disclosed? Is it age-appropriate?
-- **FOMO pressure** — Limited-time offers that pressure quick decisions?
-- **Pay-to-win** — Can paying players dominate free players unfairly?
-- **Dark patterns** — Confusing UI that leads to accidental purchases?
-- **Value transparency** — Is it clear what the player is buying?
-
-Ensure:
-- All purchases are clearly described
-- No misleading thumbnails or descriptions
-- Age-appropriate for target audience
-- Free players have a reasonable experience
+Flag potentially predatory patterns:
+- Loot boxes / gambling mechanics — Are odds disclosed?
+- FOMO pressure — Limited-time offers that pressure quick decisions?
+- Pay-to-win — Can paying players dominate free players unfairly?
+- Dark patterns — Confusing UI that leads to accidental purchases?
 
 ---
 
@@ -538,11 +450,9 @@ Ensure:
 
 Prioritized list of monetization improvements:
 
-| Priority | Recommendation | Estimated Revenue Impact |
-|----------|---------------|------------------------|
-| **Must-have** | Items that directly increase revenue | High |
-| **Should-have** | Items that improve conversion or retention | Medium |
-| **Nice-to-have** | Items that optimize existing revenue | Low |
+- **Must-have** — Items that directly increase revenue
+- **Should-have** — Items that improve conversion or retention
+- **Nice-to-have** — Items that optimize existing revenue
 
 For each recommendation:
 1. What to implement

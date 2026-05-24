@@ -1,16 +1,22 @@
 {
-  "name": "roblox-pi",
-  "version": "0.1.0",
-  "description": "Opinionated Pi harness for Roblox/Luau development",
-  "keywords": ["pi-package"],
+  "name": "roblox-opencode",
+  "version": "1.0.0",
+  "description": "OpenCode plugin for Roblox/Luau development — skills, commands, vendor libs, and config",
+  "keywords": ["opencode-plugin", "roblox", "luau", "game-development"],
   "license": "MIT",
+  "type": "module",
   "repository": {
     "type": "git",
-    "url": "https://github.com/TabooHarmony/roblox-pi"
+    "url": "https://github.com/TabooHarmony/roblox-opencode"
   },
-  "pi": {
-    "skills": ["./skills"],
-    "prompts": ["./prompts"],
-    "extensions": ["./extensions/luau-check/index.ts"]
-  }
+  "peerDependencies": {
+    "@opencode-ai/plugin": "^1.0.0"
+  },
+  "files": [
+    "src/",
+    "skills/",
+    "commands/",
+    "vendor/",
+    "core/"
+  ]
 }
