@@ -22,11 +22,11 @@ Then run `/setup` in your project to initialize.
 - roblox-tooling — Studio MCP, luau-lsp, diagnostics
 - roblox-architecture — Service hierarchy, 7 foundational patterns
 - roblox-runtime — RunService, StreamingEnabled, memory management
-- roblox-sharp-edges — 9 production footguns by severity
+- roblox-sharp-edges — 12 production footguns by severity
 - roblox-monetization — GamePasses, DevProducts, TOS compliance
 - roblox-sync — Script Sync setup and troubleshooting
 
-**5 commands:**
+**6 commands:**
 - `/setup` — Initialize environment (config, sync, MCP, LSP)
 - `/init` — Bootstrap a new project or scan an existing one
 - `/code-review` — Review with security/performance/monetization lenses
@@ -43,6 +43,7 @@ Then run `/setup` in your project to initialize.
 - Component — CollectionService tag binding (Sleitnick/RbxUtil)
 - t — Runtime type checking (osyrisrblx, recommended)
 - TestEZ — BDD testing framework (Roblox, recommended)
+- 25+ additional RbxUtil packages available on demand (see vendor/README.md)
 
 ## How it works
 
