@@ -32,7 +32,8 @@
     "skills/",
     "commands/",
     "vendor/",
-    "core/"
+    "core/",
+    "scripts/"
   ],
   "devDependencies": {
     "esbuild": "^0.28.0"

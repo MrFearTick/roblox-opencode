@@ -8,11 +8,11 @@ OpenCode plugin for Roblox/Luau development. Makes AI coding assistants competen
 opencode plugin roblox-opencode
 ```
 
-Then run `/setup-game` in your project to configure.
+Then run `opencode` once to activate (copies commands globally), then `/setup-game` in your project to configure.
 
 ## What's included
 
-**12 skills** (loaded on-demand by the AI):
+**15 skills** (loaded on-demand by the AI):
 - roblox-luau-mastery — Luau syntax, idioms, type system
 - roblox-gui — UI layout, mobile-first design, reactive frameworks
 - roblox-animation-vfx — Animation, particles, effects
@@ -25,13 +25,13 @@ Then run `/setup-game` in your project to configure.
 - roblox-sharp-edges — 12 production footguns by severity
 - roblox-monetization — GamePasses, DevProducts, TOS compliance
 - roblox-sync — Script Sync setup and troubleshooting
+- roblox-code-review — Review with security/performance/monetization lenses
+- roblox-debug — Iterative debug loop for Luau/Roblox issues
+- roblox-publish-checklist — Pre-ship verification gauntlet
 
-**6 commands:**
-- `/setup-game` — One-time project config (MCP, LSP, core block, sync)
+**3 commands** (type `/` to use):
+- `/setup-game` — One-time project config (skills, vendor, LSP, sync)
 - `/init` — Bootstrap a new project or scan an existing one
-- `/code-review` — Review with security/performance/monetization lenses
-- `/publish-checklist` — Pre-ship verification gauntlet
-- `/debug` — Iterative debug loop for Luau/Roblox issues
 - `/diagnose` — Sync sanity check
 
 **Vendor libraries** (auto-placed with mention):
@@ -47,15 +47,14 @@ Then run `/setup-game` in your project to configure.
 
 ## How it works
 
-The plugin is a setup orchestrator. On install, it copies skills, commands, and vendor libs to your project, writes LSP and MCP config to `opencode.json`, and writes the core directives block to `AGENTS.md`.
+The plugin registers a `roblox_setup` tool and copies 3 commands to your global config on first launch. When you run `/setup-game`, it copies 15 skills and vendor libs to your project, writes LSP config to `opencode.json`, and writes the core directives block to `AGENTS.md`.
 
-After setup, the plugin is dormant. The 12 skills do all the work — the AI loads them on-demand based on what you're working on.
+After setup, the plugin is dormant. The 15 skills do all the work — the AI loads them on-demand based on what you're working on.
 
 ## Prerequisites
 
 - [luau-lsp](https://github.com/JohnnyMorganz/luau-lsp) — Luau diagnostics (setup checks and guides install)
-- [Roblox Studio](https://www.roblox.com/create) — With Script Sync enabled
-- uv (optional) — For mcp-roblox-docs live API reference
+- [Roblox Studio](https://www.roblox.com/create) — With Script Sync and MCP server enabled
 
 ## Update
 
@@ -63,7 +62,7 @@ After setup, the plugin is dormant. The 12 skills do all the work — the AI loa
 opencode plugin roblox-opencode --force
 ```
 
-Re-runs setup. Skills, commands, and config are overwritten. Content outside managed markers in AGENTS.md is preserved.
+Re-runs setup. Skills, vendor libs, and config are overwritten. Content outside managed markers in AGENTS.md is preserved.
 
 ## License
 

@@ -14,7 +14,7 @@ Commands (`/init`, `/diagnose`, etc.) are already available globally. Skills (`r
 ## Step 1: Run the setup tool
 
 Call the `roblox_setup` tool. It handles:
-- Copying 12 skills to `.opencode/skills/`
+- Copying 15 skills to `.opencode/skills/`
 - Copying vendor libraries (rbxutil, profilestore, promise, testez, t) to `vendor/`
 - Writing luau-lsp config to `opencode.json`
 - Writing the core Roblox agent instructions to `AGENTS.md`

@@ -77,14 +77,14 @@ Do not prefix verified responses with "Verified: ..." — that noise trains user
 
 **Anything else**: full consent. Agent explains, asks via user prompts, places only on yes.
 
-## 9. Slash Commands
+## 9. Skill & Command Routing
 
-When the user's task matches a slash command's purpose, suggest it:
-- New project or scanning existing → suggest /init
-- Code review or audit → suggest /code-review
-- Pre-publish check → suggest /publish-checklist
-- Debugging → suggest /debug
-- Sync feels broken → suggest /diagnose
+When the user's task matches a command or skill, suggest it:
+- New project or scanning existing → /init (command)
+- Sync feels broken → /diagnose (command)
+- Code review or audit → load roblox-code-review skill
+- Debugging → load roblox-debug skill
+- Pre-publish check → load roblox-publish-checklist skill
 
 ## Version
 
