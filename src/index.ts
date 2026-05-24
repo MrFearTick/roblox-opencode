@@ -220,4 +220,7 @@ export function writeMcpConfig(
   writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n")
 }
 
-export default RobloxOpenCode
+export default {
+  id: "roblox-opencode",
+  server: RobloxOpenCode,
+}
