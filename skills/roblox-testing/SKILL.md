@@ -22,6 +22,25 @@ Testing in Roblox is non-trivial because game code depends heavily on engine ser
 
 ---
 
+## Quick Reference
+
+**Load Full Reference below only when you need specific mock implementations or test patterns.**
+
+Key rules:
+- TestEZ is the framework. BDD style: `describe/it/expect`. Files named `*.spec.luau`.
+- Test pure logic modules first (no Roblox dependencies). Highest ROI.
+- Dependency injection for testability: pass services as constructor args, mock in tests.
+- Mock pattern: table that mimics the service interface. Only implement methods you test.
+- `beforeEach` for fresh state per test. Never share mutable state between `it` blocks.
+- Integration tests: test module interactions, not Roblox engine behavior.
+- MCP-powered testing: use execute_luau to run tests in Studio, read output.
+- Don't test Roblox engine behavior (physics, rendering). Test YOUR logic.
+- Run tests via: require(TestEZ).TestBootstrap:run({testRoot})
+
+---
+
+## Full Reference
+
 ## 2. TestEZ Framework
 
 > **TestEZ is vendored in this harness** at `vendor/testez/` (v0.4.2, Apache 2.0). The agent can place it into your project when you need testing. No Wally install required.

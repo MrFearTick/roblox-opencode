@@ -40,6 +40,25 @@ The agent will recommend these when relevant. You can veto by saying "use my own
 
 ---
 
+## Quick Reference
+
+**Load Full Reference below only when you need specific syntax examples or implementation details.**
+
+Key rules:
+- Luau is NOT Lua 5.1. Has: generics, `continue`, `+=`, string interpolation (backticks), floor division `//`
+- Arrays are 1-based. `#tbl` for length. Generalized iteration: `for k, v in tbl do`
+- Always use `task.wait/spawn/delay` (never deprecated `wait/spawn/delay`)
+- Instance.new: configure properties THEN set Parent last (replication race)
+- Services: `game:GetService("Name")` at top of script, stored in locals
+- OOP: `.` for constructors, `:` for methods. `__index = self` pattern.
+- Type system: gradual typing, `typeof()` for narrowing, `::` for casting, `export type` for cross-module
+- Prefer backtick interpolation over `..` concatenation
+- Use vendored libs (Promise, Trove, Signal, Comm, Component, ProfileStore) over raw equivalents
+
+---
+
+## Full Reference
+
 ## Core Concepts
 
 ### Luau Extensions (not in Lua 5.1)

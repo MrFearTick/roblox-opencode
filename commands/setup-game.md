@@ -7,7 +7,7 @@ agent: build
 
 One-time project configuration for roblox-opencode. Run this when you first open a Roblox project.
 
-Commands (`/init`, `/diagnose`, etc.) are already available globally. Skills (`roblox-code-review`, `roblox-debug`, `roblox-publish-checklist`) are loaded on demand. This command sets up the *project*.
+Commands (`/setup-game`, `/sync-check`) are already available globally. Skills (`roblox-code-review`, `roblox-debug`, `roblox-publish-checklist`) are loaded on demand. This command sets up the *project*.
 
 ---
 
@@ -103,8 +103,8 @@ When the user confirms sync is enabled:
 "roblox-opencode is ready. Here's what you can do:
 
 **Commands** (type `/` to use):
-- /init — bootstrap a new project or scan an existing one
-- /diagnose — check if Script Sync is working properly
+- /setup-game — re-run this setup (after plugin updates)
+- /sync-check — check if Script Sync is working properly
 
 **Skills** (AI suggests when relevant):
 - roblox-code-review — review code with security/performance/monetization lenses

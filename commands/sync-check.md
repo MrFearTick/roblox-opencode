@@ -3,7 +3,7 @@ description: "Sync sanity check — diagnose when files aren't appearing in Stud
 agent: build
 ---
 
-# /diagnose
+# /sync-check
 
 On-demand sync sanity check. Run when files aren't appearing in Studio or edits aren't landing on disk.
 
@@ -33,7 +33,7 @@ Walk through these in order:
 
 If none of these resolve it:
 
-- "Script Sync may have silently disconnected. Restart Studio and re-run /diagnose."
+- "Script Sync may have silently disconnected. Restart Studio and re-run /sync-check."
 - Do NOT suggest switching to MCP as a fix. Sync is the canonical path.
 
 ## Step 4: MCP-Only Mode check

@@ -34,6 +34,26 @@ Player Leaves -->  Server saves to DataStore     -->  Data persists for next ses
 
 ---
 
+## Quick Reference
+
+**Load Full Reference below only when you need specific implementation examples or migration patterns.**
+
+Key rules:
+- ALWAYS use ProfileStore for player data. Never raw DataStoreService for mutable player state.
+- Session locking prevents data corruption from multi-server joins. ProfileStore handles this.
+- BindToClose is MANDATORY. Flush all pending saves on server shutdown.
+- Schema: use a default template table. New fields get default values automatically.
+- Access pattern: `profile.Data.fieldName`. Mutate directly, ProfileStore auto-saves.
+- Release profile on PlayerRemoving: `profile:Release()`
+- OrderedDataStore for leaderboards only (separate from player data).
+- Data migration: version field in schema, migrate on load if version < current.
+- Never store Instances or functions in DataStores. Serialize to primitives.
+- Cross-server: MessagingService for real-time, GlobalDataStore for shared state.
+
+---
+
+## Full Reference
+
 ## 2. Raw DataStore API (Reference Only)
 
 > **For production games, skip to section 4 (ProfileStore).** This section exists so you understand what's underneath. Do NOT implement manual auto-save, session locking, BindToClose handlers, or retry logic — ProfileStore handles all of this.

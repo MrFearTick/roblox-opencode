@@ -25,6 +25,26 @@ Roblox provides four primary monetization channels: **GamePasses** (one-time per
 
 ---
 
+## Quick Reference
+
+**Load Full Reference below only when you need specific API implementations or pricing formulas.**
+
+Key rules:
+- GamePasses: one-time purchase, check with UserOwnsGamePassAsync on join + cache.
+- Developer Products: consumable, ProcessReceipt is the ONLY place to grant items.
+- ProcessReceipt contract: grant item THEN return PurchaseGranted. If grant fails, return NotProcessedYet. Never return PurchaseGranted before granting.
+- All purchase logic is SERVER-SIDE. Client only prompts.
+- PromptGamePassPurchase / PromptProductPurchase from client, handle on server.
+- TOS: odds disclosure MANDATORY for random items. Games get removed without it.
+- TOS: no real-world trading, no misleading purchase UI, no pay-to-win that ruins gameplay.
+- DevEx rate: 0.0035 USD per Robux earned (as of 2025).
+- Premium Payouts: engagement-based, detect with player.MembershipType.
+- Never store purchase state only in DataStore without session locking (use ProfileStore).
+
+---
+
+## Full Reference
+
 ## 2. GamePasses
 
 GamePasses are **one-time permanent purchases** tied to the player's account. Once bought, the player owns it forever across all sessions. Ideal for VIP perks, permanent stat boosts, cosmetic bundles, and feature unlocks.

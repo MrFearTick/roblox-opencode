@@ -23,6 +23,26 @@ Performance optimization is not a one-time task. It should be revisited after ev
 
 ---
 
+## Quick Reference
+
+**Load Full Reference below only when you need specific optimization techniques or benchmarks.**
+
+Key rules:
+- Target: 60 FPS (16.6ms/frame). Server heartbeat budget: 30 FPS (33ms).
+- Part count: <10k visible for mobile, <50k for desktop. Use StreamingEnabled.
+- One Heartbeat connection that dispatches, not N separate connections.
+- Disconnect ALL event connections when done. Use Trove. Leaks = silent frame drops.
+- Instance.Destroying event for cleanup when instances are removed.
+- Debris:AddItem() for timed cleanup (projectiles, effects).
+- Network: minimize RemoteEvent payload size. Batch related calls. Use UnreliableRemoteEvent for non-critical updates (positions, cosmetics).
+- Mobile: halve particle counts, reduce draw distance, simplify meshes.
+- Memory: avoid reference cycles (A→B→A). Weak tables for caches.
+- String concat in loops: use table.concat, not repeated `..`
+
+---
+
+## Full Reference
+
 ## 2. Performance Targets
 
 | Metric | Desktop | Mobile |

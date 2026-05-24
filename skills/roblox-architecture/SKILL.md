@@ -24,6 +24,26 @@ This document covers the Roblox data model, service hierarchy, script types, cli
 
 ---
 
+## Quick Reference
+
+**Load Full Reference below only when you need specific folder layouts or framework comparisons.**
+
+Key rules:
+- ServerScriptService: server logic (never visible to client)
+- ServerStorage: server-only assets/data
+- ReplicatedStorage: shared modules, RemoteEvents, assets both sides need
+- StarterPlayerScripts: client controllers (run once per player)
+- StarterGui: ScreenGuis (cloned to PlayerGui on spawn)
+- Script types: Script (server), LocalScript (client), ModuleScript (shared, returns one table)
+- Communication: RemoteEvent (fire-and-forget), RemoteFunction (request-response, avoid for client→server)
+- Module pattern: return a table of functions. One module = one responsibility.
+- Avoid circular requires. Use events/signals for cross-module communication.
+- Single entry point per side: one server Script requires service modules, one LocalScript requires controllers.
+
+---
+
+## Full Reference
+
 ## 2. Core Concepts
 
 ### The Data Model

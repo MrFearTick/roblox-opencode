@@ -45,6 +45,7 @@ Only for ambiguous cases where two skills overlap:
 - security hardening → roblox-networking (security is folded in)
 
 For everything else, load the skill whose description best matches the task.
+Load the Quick Reference section first. Only load the Full Reference if the task requires specific syntax examples or implementation details.
 
 ## 5. Asset Trust
 
@@ -80,8 +81,8 @@ Do not prefix verified responses with "Verified: ..." — that noise trains user
 ## 9. Skill & Command Routing
 
 When the user's task matches a command or skill, suggest it:
-- New project or scanning existing → /init (command)
-- Sync feels broken → /diagnose (command)
+- First-time project setup → /setup-game (command)
+- Sync feels broken → /sync-check (command)
 - Code review or audit → load roblox-code-review skill
 - Debugging → load roblox-debug skill
 - Pre-publish check → load roblox-publish-checklist skill

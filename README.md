@@ -29,10 +29,9 @@ Then run `opencode` once to activate (copies commands globally), then `/setup-ga
 - roblox-debug — Iterative debug loop for Luau/Roblox issues
 - roblox-publish-checklist — Pre-ship verification gauntlet
 
-**3 commands** (type `/` to use):
+**2 commands** (type `/` to use):
 - `/setup-game` — One-time project config (skills, vendor, LSP, sync)
-- `/init` — Bootstrap a new project or scan an existing one
-- `/diagnose` — Sync sanity check
+- `/sync-check` — Sync sanity check
 
 **Vendor libraries** (auto-placed with mention):
 - ProfileStore — Data persistence with session locking
