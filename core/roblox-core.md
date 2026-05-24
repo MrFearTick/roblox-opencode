@@ -18,17 +18,17 @@
 
 ## 2. Sharp Edges
 
-| ID | Sev | Issue | Fix |
-|----|-----|-------|-----|
-| SE-1 | CRIT | DataStore data loss from no session lock | Use ProfileStore. Never raw SetAsync for player data. |
-| SE-2 | CRIT | Client-side currency manipulation | All currency math server-side. Client is display-only. |
-| SE-3 | CRIT | ProcessReceipt mishandling (duplicates/refunds) | Grant item THEN return PurchaseGranted. If grant fails, return NotProcessedYet. |
-| SE-4 | CRIT | Missing BindToClose | Always implement BindToClose to flush pending saves. |
-| SE-5 | HIGH | RemoteEvent flooding | Per-player rate limiting on all remotes. |
-| SE-6 | HIGH | Memory leaks from undisconnected events | Use Trove. Every :Connect() must have a corresponding :Disconnect(). |
-| SE-7 | HIGH | Assuming instances exist with StreamingEnabled | Check existence before access. Instances may not be loaded yet. |
-| SE-8 | MED | Instance.new(class, parent) race | Create first, parent second. Parenting in constructor causes replication race. |
-| SE-9 | LOW | :connect typo | It's :Connect() with capital C. |
+| Severity | Issue | Fix |
+|----------|-------|-----|
+| CRIT | DataStore data loss from no session lock | Use ProfileStore. Never raw SetAsync for player data. |
+| CRIT | Client-side currency manipulation | All currency math server-side. Client is display-only. |
+| CRIT | ProcessReceipt mishandling (duplicates/refunds) | Grant item THEN return PurchaseGranted. If grant fails, return NotProcessedYet. |
+| CRIT | Missing BindToClose | Always implement BindToClose to flush pending saves. |
+| HIGH | RemoteEvent flooding | Per-player rate limiting on all remotes. |
+| HIGH | Memory leaks from undisconnected events | Use Trove. Every :Connect() must have a corresponding :Disconnect(). |
+| HIGH | Assuming instances exist with StreamingEnabled | Check existence before access. Instances may not be loaded yet. |
+| MED | Instance.new(class, parent) race | Create first, parent second. Parenting in constructor causes replication race. |
+| LOW | :connect typo | It's :Connect() with capital C. |
 
 ## 3. Capabilities Boundary
 

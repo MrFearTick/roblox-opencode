@@ -78,8 +78,8 @@ git commit -m "initial sync"
 ### .gitignore for Roblox projects
 
 ```gitignore
-# Pi
-.pi/
+# OpenCode
+.opencode/
 
 # Roblox build files (binary, don't track)
 *.rbxl

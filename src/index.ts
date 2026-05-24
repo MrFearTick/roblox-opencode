@@ -113,6 +113,7 @@ export async function runSetup(directory: string) {
   steps.push({
     name: "Write core block to AGENTS.md",
     fn: () => {
+      const agentsPath = join(projectDir, "AGENTS.md")
       const corePath = join(pkgDir, "core", "roblox-core.md")
       const coreContent = readFileSync(corePath, "utf-8")
 
