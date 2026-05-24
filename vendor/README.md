@@ -10,10 +10,10 @@ user can veto. Context-mode queries check for existing equivalents before auto-p
 
 | Library | Path | Source | License | Use Instead Of |
 |---------|------|--------|---------|----------------|
-| **ProfileStore** | `ProfileStore.luau` | loleris/MadStudioRoblox | Apache 2.0 | Raw DataStoreService |
+| **ProfileStore** | `profilestore/init.luau` | loleris/MadStudioRoblox | Apache 2.0 | Raw DataStoreService |
 | **Trove** | `rbxutil/trove/` | Sleitnick/RbxUtil | MIT | Manual connection tracking |
 | **Signal** | `rbxutil/signal/` | Sleitnick/RbxUtil | MIT | BindableEvent for module-to-module |
-| **Promise** | `promise.luau` | evaera/roblox-lua-promise | MIT | Raw coroutines for async |
+| **Promise** | `promise/init.luau` | evaera/roblox-lua-promise | MIT | Raw coroutines for async |
 | **Comm** | `rbxutil/comm/` | Sleitnick/RbxUtil | MIT | Raw RemoteEvent/RemoteFunction |
 | **Component** | `rbxutil/component/` | Sleitnick/RbxUtil | MIT | Manual CollectionService tag listeners |
 
@@ -77,5 +77,5 @@ local Comm = require(game.ReplicatedStorage.Packages.Comm)
 local Component = require(game.ReplicatedStorage.Packages.Component)
 
 -- ProfileStore (server-only, placed in ServerScriptService)
-local ProfileStore = require(game.ServerScriptService.Packages.ProfileStore)
+local ProfileStore = require(game.ServerScriptService.Packages.ProfileStore) -- profilestore/init.luau
 ```
