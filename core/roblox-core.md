@@ -1,5 +1,5 @@
 # roblox-opencode Core Block
-# Written to AGENTS.md by /setup between version markers.
+# Written to AGENTS.md by /setup-game between version markers.
 # Budget: ~1.2k tokens. Every line must earn its place.
 
 ## 1. Sync vs MCP

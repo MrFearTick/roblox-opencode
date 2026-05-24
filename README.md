@@ -8,7 +8,7 @@ OpenCode plugin for Roblox/Luau development. Makes AI coding assistants competen
 opencode plugin roblox-opencode
 ```
 
-Then run `/setup` in your project to initialize.
+Then run `/setup-game` in your project to configure.
 
 ## What's included
 
@@ -27,7 +27,7 @@ Then run `/setup` in your project to initialize.
 - roblox-sync — Script Sync setup and troubleshooting
 
 **6 commands:**
-- `/setup` — Initialize environment (config, sync, MCP, LSP)
+- `/setup-game` — One-time project config (MCP, LSP, core block, sync)
 - `/init` — Bootstrap a new project or scan an existing one
 - `/code-review` — Review with security/performance/monetization lenses
 - `/publish-checklist` — Pre-ship verification gauntlet

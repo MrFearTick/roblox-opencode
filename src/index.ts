@@ -10,74 +10,16 @@ export const RobloxOpenCode: Plugin = async ({ directory, client }) => {
   const projectDir = directory
   const pkgDir = dirname(dirname(new URL(import.meta.url).pathname))
 
-  // Only activate for Roblox projects — check for .luau files or existing markers
-  const agentsPath = join(projectDir, "AGENTS.md")
-  let isRobloxProject = false
-
-  if (existsSync(agentsPath)) {
-    const content = readFileSync(agentsPath, "utf-8")
-    if (content.includes("<!-- roblox-opencode") || content.includes("<!-- roblox-pi")) {
-      isRobloxProject = true
-    }
-  }
-
-  if (!isRobloxProject) {
-    // Check for .luau files in the project
-    try {
-      const { readdirSync } = await import("fs")
-      const hasLuau = (dir, depth) => {
-        if (depth > 2) return false
-        for (const entry of readdirSync(dir, { withFileTypes: true })) {
-          if (entry.name.startsWith(".")) continue
-          const full = join(dir, entry.name)
-          if (entry.isFile() && entry.name.endsWith(".luau")) return true
-          if (entry.isDirectory() && hasLuau(full, depth + 1)) return true
-        }
-        return false
-      }
-      isRobloxProject = hasLuau(projectDir, 0)
-    } catch {
-      // can't read directory, stay silent
-    }
-  }
-
-  if (!isRobloxProject) return {} // silent — not a Roblox project
-
-  client.app.log.info(`roblox-opencode v${VERSION} loaded`)
-
-  // Auto-copy skills and commands to project if missing
-  const skillsDir = join(projectDir, ".opencode", "skills")
+  // Always copy commands — they're tiny and harmless.
+  // This ensures /setup-game, /init, etc. are available even in new projects.
   const commandsDir = join(projectDir, ".opencode", "commands")
-
-  if (!existsSync(skillsDir)) {
-    try {
-      mkdirSync(skillsDir, { recursive: true })
-      cpSync(join(pkgDir, "skills"), skillsDir, { recursive: true })
-      client.app.log.info("roblox-opencode: skills copied to .opencode/skills/")
-    } catch (e) {
-      client.app.log.warn(`roblox-opencode: failed to copy skills: ${e}`)
-    }
-  }
-
-  if (!existsSync(commandsDir)) {
-    try {
+  try {
+    if (!existsSync(commandsDir)) {
       mkdirSync(commandsDir, { recursive: true })
-      cpSync(join(pkgDir, "commands"), commandsDir, { recursive: true })
-      client.app.log.info("roblox-opencode: commands copied to .opencode/commands/")
-    } catch (e) {
-      client.app.log.warn(`roblox-opencode: failed to copy commands: ${e}`)
     }
-  }
-
-  // Check if AGENTS.md has current version markers
-  if (existsSync(agentsPath)) {
-    const content = readFileSync(agentsPath, "utf-8")
-    const hasCurrentMarkers = content.includes(MARKER_BEGIN)
-    const hasOldMarkers = content.includes("<!-- roblox-opencode") && !hasCurrentMarkers
-
-    if (hasOldMarkers) {
-      client.app.log.warn("roblox-opencode AGENTS.md markers are outdated. Run /setup to update.")
-    }
+    cpSync(join(pkgDir, "commands"), commandsDir, { recursive: true })
+  } catch {
+    // non-fatal
   }
 
   return {}

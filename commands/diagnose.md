@@ -42,8 +42,8 @@ If in MCP-Only Mode (no files on disk):
 
 1. Check if Studio MCP is registered in opencode.json.
 2. Try a simple MCP call (e.g., list scripts in ServerScriptService).
-3. If MCP responds: "MCP-Only mode is working, but sync is recommended for heavy sessions. Run /setup to enable sync."
-4. If MCP fails: "Neither sync nor MCP is working. Run /setup to configure the environment."
+3. If MCP responds: "MCP-Only mode is working, but sync is recommended for heavy sessions. Run /setup-game to enable sync."
+4. If MCP fails: "Neither sync nor MCP is working. Run /setup-game to configure the environment."
 
 ## Behavior rules
 

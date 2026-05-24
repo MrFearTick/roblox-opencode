@@ -1,17 +1,26 @@
 ---
-description: "Initialize roblox-opencode environment — config, skills, sync verification"
+description: "Configure roblox-opencode: MCP, LSP, core block, sync verification"
 agent: build
 ---
 
-# /setup
+# /setup-game
 
-Orchestrates the roblox-opencode environment. Idempotent. Re-runnable. Self-updating.
+One-time project configuration for roblox-opencode. Run this after opening a Roblox project for the first time.
 
-Skills and commands are auto-copied by the plugin when it detects a Roblox project. /setup handles the remaining configuration: MCP, LSP, AGENTS.md core block, and sync verification.
+Skills and commands are already auto-copied by the plugin. This command handles skills, vendor libs, and configuration.
 
 ---
 
-## Step 1: Check prerequisites
+## Step 1: Copy skills and vendor libs
+
+Copy the 12 skills from the plugin package to `.opencode/skills/`:
+- Find the plugin directory (usually `~/.config/opencode/plugins/roblox-opencode/` or `.opencode/plugins/roblox-opencode/`)
+- Copy `skills/` to `.opencode/skills/`
+- Copy `vendor/` to `vendor/` in the project root
+
+If the directories already exist, skip the copy (idempotent).
+
+## Step 2: Check prerequisites
 
 Run these checks:
 
