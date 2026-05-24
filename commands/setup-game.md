@@ -80,7 +80,7 @@ For opencode to connect, add this to your project's `opencode.json`:
 
 After adding the config, restart opencode to connect.
 
-## Step 5: Sync setup + sentinel verification
+## Step 5: Sync setup
 
 Hand off Script Sync setup to the user with these instructions:
 
@@ -90,13 +90,7 @@ Hand off Script Sync setup to the user with these instructions:
 
 Suggested folder layout: ~/projects/<game-name>/src/<container-name>/"
 
-When the user confirms sync is enabled:
-
-1. Write `_sync_check.luau` to the synced folder with content: `-- roblox-opencode sync verification sentinel`
-2. Ask user: "Did `_sync_check.luau` appear in Studio's Explorer?"
-3. If yes: clean up the sentinel file. Sync is confirmed.
-4. If no: "Sync doesn't seem to be working. Check that you right-clicked the correct container and picked the right folder. Re-run /setup-game when ready."
-5. Do NOT claim sync is working without this confirmation.
+"You should now see your scripts in Studio's Explorer matching the files on disk. If you do, sync is working. If the container looks empty, double-check you picked the right folder and that Studio is focused (sync pauses when minimized). Run /sync-check if you need to verify later."
 
 ## Step 6: Print the command tour
 

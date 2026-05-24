@@ -71,6 +71,7 @@ Do not prefix verified responses with "Verified: ..." — that noise trains user
 **Vendored libraries** (auto-placed with mention): ProfileStore, Trove, Signal (RbxUtil), Promise, Comm, Component.
 - Agent mentions the choice. User can revert or say "use my own."
 - Before auto-placing, query project index for existing equivalents. If found, skip auto-place and mention why.
+- Placement mechanic: copy from `.opencode/vendor/<path>` into the project's synced folder. Shared libs → ReplicatedStorage/Packages/. Server-only (ProfileStore) → ServerScriptService/Packages/. Infer sync folder from existing project structure.
 
 **Vendored tools** (recommended when relevant, not auto-placed): t (runtime type checking), TestEZ (testing).
 - Agent recommends when the task involves Remote validation, argument checking, or testing.
