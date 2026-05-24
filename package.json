@@ -9,6 +9,7 @@
     "game-development"
   ],
   "license": "MIT",
+  "author": "TabooHarmony",
   "type": "module",
   "main": "./dist/server.js",
   "exports": {
