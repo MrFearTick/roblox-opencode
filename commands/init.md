@@ -60,7 +60,7 @@ If sync isn't already detected (no `.luau` files on disk), walk the user through
 2. Right-click top-level container → Start Sync → pick folder
 3. Repeat for each container with scripts
 
-See `skills/roblox-sync/SKILL.md` for full walkthrough.
+See `skills/roblox-sync/SKILL.md` for full walkthrough. If the skill isn't available yet (setup-game hasn't been run), provide the basic steps inline.
 
 ## Done
 

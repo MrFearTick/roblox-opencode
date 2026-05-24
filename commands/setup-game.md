@@ -7,50 +7,53 @@ agent: build
 
 One-time project configuration for roblox-opencode. Run this when you first open a Roblox project.
 
-Commands (`/init`, `/code-review`, etc.) are already available globally — installed when you ran `opencode plugin roblox-opencode`. This command sets up the *project*: skills, vendor libs, and tooling config.
+Commands (`/init`, `/code-review`, etc.) are already available globally. This command sets up the *project*.
 
 ---
 
-## Step 1: Find the plugin directory
+## Step 1: Run the setup tool
 
-The plugin package is installed somewhere on disk. Find it:
+Call the `roblox_setup` tool. It handles:
+- Copying 12 skills to `.opencode/skills/`
+- Copying vendor libraries (rbxutil, profilestore, promise, testez, t) to `vendor/`
+- Writing luau-lsp config to `opencode.json`
+- Writing the core Roblox agent instructions to `AGENTS.md`
 
+Report the results to the user. If any step failed, explain what went wrong and how to fix it.
+
+## Step 2: Check prerequisites
+
+Run these checks (cross-platform):
+
+```bash
+command -v luau-lsp   # needed for Luau diagnostics
+command -v uvx        # needed for mcp-roblox-docs
 ```
-# Check the OpenCode config for the plugin path
-cat .opencode/opencode.json | grep -A2 plugin
-```
-
-If it's a relative path like `../roblox-opencode`, resolve it. If it's an npm package name, find it in `~/.config/opencode/node_modules/roblox-opencode/`.
-
-## Step 2: Copy skills and vendor libs
-
-From the plugin directory, copy:
-- `skills/` → `.opencode/skills/` (12 skills)
-- `vendor/` → `vendor/` in the project root (rbxutil, profilestore, promise, testez, t)
-
-If the directories already exist, skip (idempotent).
-
-## Step 3: Check prerequisites
-
-Run these checks:
-
-- `which luau-lsp` — needed for Luau diagnostics
-- `which uvx` — needed for mcp-roblox-docs
 
 If luau-lsp is missing: point user to https://github.com/JohnnyMorganz/luau-lsp/releases and guide install. If declined, note: "Reduced safety net. Install luau-lsp later and re-run /setup-game."
 
 If uvx is missing: prompt "mcp-roblox-docs needs uv (Python package manager). Install it? (y/n)". If yes: `curl -LsSf https://astral.sh/uv/install.sh | sh`. If no: skip roblox-docs MCP server.
 
+## Step 3: Download globalTypes.d.luau
+
+If luau-lsp is installed, download the Roblox type definitions:
+
+```bash
+curl -fsSL https://luau-lsp.pages.dev/type-definitions/globalTypes.RobloxScriptSecurity.d.luau -o globalTypes.d.luau
+```
+
+This file provides Roblox API types to luau-lsp. The `--definitions` flag in the LSP config (from Step 1) points to it.
+
 ## Step 4: Write MCP config
 
-Write to `opencode.json` (merge with existing):
+Write to `opencode.json` (merge with existing). The Studio MCP server enables AI ↔ Studio communication:
 
 ```json
 {
   "mcp": {
     "studio": {
       "type": "local",
-      "command": ["npx", "-y", "@anthropic/studio-mcp"],
+      "command": ["npx", "-y", "@weppy/roblox-mcp"],
       "enabled": true
     }
   }
@@ -73,40 +76,7 @@ If uvx is available, also add:
 
 Note to user: "Enable the Studio MCP server in Studio: open the Assistant widget (View → Assistant), click the MCP toggle. One click."
 
-## Step 5: Write LSP config
-
-Write to `opencode.json` (merge with existing):
-
-```json
-{
-  "lsp": {
-    "luau": {
-      "command": ["luau-lsp", "--stdio"],
-      "extensions": [".luau"]
-    }
-  }
-}
-```
-
-## Step 6: Download globalTypes.d.luau
-
-If luau-lsp is installed, download the pinned `globalTypes.d.luau` from the luau-lsp repo and place it in the project root. Configure `.luaurc` to reference it if needed.
-
-## Step 7: Write core block to AGENTS.md
-
-Read `core/roblox-core.md` from the roblox-opencode package directory.
-
-Write it to the project's `./AGENTS.md` between managed markers:
-
-```
-<!-- roblox-opencode 1.0.0 BEGIN — managed block, edits inside will be overwritten -->
-... content from core/roblox-core.md ...
-<!-- roblox-opencode END -->
-```
-
-If AGENTS.md already has managed markers (roblox-opencode or old roblox-pi), replace the content between them. If AGENTS.md has content outside the markers, preserve it.
-
-## Step 8: Sync setup + sentinel verification
+## Step 5: Sync setup + sentinel verification
 
 Hand off Script Sync setup to the user with these instructions:
 
@@ -124,7 +94,7 @@ When the user confirms sync is enabled:
 4. If no: "Sync doesn't seem to be working. Check that you right-clicked the correct container and picked the right folder. Re-run /setup-game when ready."
 5. Do NOT claim sync is working without this confirmation.
 
-## Step 9: Print the command tour
+## Step 6: Print the command tour
 
 "roblox-opencode is ready. Here's what you can do:
 - /init — bootstrap a new project or scan an existing one

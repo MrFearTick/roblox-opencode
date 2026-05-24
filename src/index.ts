@@ -1,4 +1,5 @@
 import type { Plugin } from "@opencode-ai/plugin"
+import { tool } from "@opencode-ai/plugin"
 
 const VERSION = "1.0.0"
 const MARKER_BEGIN = `<!-- roblox-opencode ${VERSION} BEGIN — managed block, edits inside will be overwritten -->`
@@ -7,14 +8,13 @@ const MARKER_END = "<!-- roblox-opencode END -->"
 /**
  * Plugin entry point.
  * On first load: copies commands to global config (~/.config/opencode/commands/).
- * This ensures /setup-game etc. are available even if opencode has never been
- * launched in a Roblox project before.
+ * Registers roblox_setup tool for project configuration.
  */
 export const RobloxOpenCode: Plugin = async () => {
-  // Copy commands to global config (idempotent — skips if already there)
+  // Copy commands to global config (idempotent — always overwrites)
   try {
     const { existsSync, mkdirSync, readdirSync, copyFileSync } = await import("fs")
-    const { join, homedir } = await import("path")
+    const { join } = await import("path")
     const os = await import("os")
 
     const pkgDir = join(import.meta.dirname ?? new URL(".", import.meta.url).pathname, "..")
@@ -25,21 +25,29 @@ export const RobloxOpenCode: Plugin = async () => {
       mkdirSync(destDir, { recursive: true })
       const files = readdirSync(srcDir).filter(f => f.endsWith(".md"))
       for (const file of files) {
-        const dest = join(destDir, file)
-        // Always overwrite — commands may be updated between versions
-        copyFileSync(join(srcDir, file), dest)
+        copyFileSync(join(srcDir, file), join(destDir, file))
       }
     }
   } catch {
-    // non-fatal — commands may already exist or dir may be read-only
+    // non-fatal
   }
 
-  return {}
+  return {
+    tool: {
+      roblox_setup: tool({
+        description: "One-time project setup for roblox-opencode. Copies 12 skills and vendor libraries (rbxutil, profilestore, promise, testez, t) to the project, writes luau-lsp config to opencode.json, and writes the core Roblox agent instructions to AGENTS.md. Run this when first opening a Roblox project.",
+        args: {},
+        async execute(_args, context) {
+          return await runSetup(context.directory)
+        },
+      }),
+    },
+  }
 }
 
 /**
  * Setup orchestrator — copies skills, vendor libs, writes config.
- * Called by the /setup-game command (which is a global command, always available).
+ * Called by the roblox_setup tool.
  */
 export async function runSetup(directory: string) {
   const { existsSync, mkdirSync, readFileSync, writeFileSync, cpSync } = await import("fs")
@@ -50,7 +58,7 @@ export async function runSetup(directory: string) {
 
   const steps: { name: string; fn: () => void }[] = []
 
-  // Step 1: Copy skills
+  // Step 1: Copy skills (always overwrite — ensures updates propagate)
   steps.push({
     name: "Copy 12 skills to .opencode/skills/",
     fn: () => {
@@ -62,7 +70,7 @@ export async function runSetup(directory: string) {
     },
   })
 
-  // Step 2: Copy vendor libs
+  // Step 2: Copy vendor libs (always overwrite)
   steps.push({
     name: "Copy vendor libraries to project",
     fn: () => {
@@ -86,7 +94,7 @@ export async function runSetup(directory: string) {
       config.lsp = {
         ...(config.lsp as Record<string, unknown> || {}),
         luau: {
-          command: ["luau-lsp", "--stdio"],
+          command: ["luau-lsp", "lsp"],
           extensions: [".luau"],
         },
       }
@@ -109,7 +117,6 @@ export async function runSetup(directory: string) {
         agentsContent = readFileSync(agentsPath, "utf-8")
       }
 
-      // Replace existing managed block or append
       const beginPattern = /<!-- roblox-opencode[^>]*BEGIN[^>]*-->/
       const endPattern = /<!-- roblox-opencode END -->/
       const oldBeginPattern = /<!-- roblox-pi[^>]*BEGIN[^>]*-->/
@@ -166,7 +173,7 @@ export async function writeMcpConfig(
   }
   const mcp: Record<string, unknown> = {}
   if (servers.studio) {
-    mcp.studio = { type: "local", command: ["npx", "-y", "@anthropic/studio-mcp"], enabled: true }
+    mcp.studio = { type: "local", command: ["npx", "-y", "@weppy/roblox-mcp"], enabled: true }
   }
   if (servers.robloxDocs) {
     mcp["roblox-docs"] = { type: "local", command: ["uvx", "mcp-roblox-docs"], enabled: true }

@@ -1,11 +1,12 @@
 // src/index.ts
+import { tool } from "@opencode-ai/plugin";
 var VERSION = "1.0.0";
 var MARKER_BEGIN = `<!-- roblox-opencode ${VERSION} BEGIN \u2014 managed block, edits inside will be overwritten -->`;
 var MARKER_END = "<!-- roblox-opencode END -->";
 var RobloxOpenCode = async () => {
   try {
     const { existsSync, mkdirSync, readdirSync, copyFileSync } = await import("fs");
-    const { join, homedir } = await import("path");
+    const { join } = await import("path");
     const os = await import("os");
     const pkgDir = join(import.meta.dirname ?? new URL(".", import.meta.url).pathname, "..");
     const srcDir = join(pkgDir, "commands");
@@ -14,13 +15,22 @@ var RobloxOpenCode = async () => {
       mkdirSync(destDir, { recursive: true });
       const files = readdirSync(srcDir).filter((f) => f.endsWith(".md"));
       for (const file of files) {
-        const dest = join(destDir, file);
-        copyFileSync(join(srcDir, file), dest);
+        copyFileSync(join(srcDir, file), join(destDir, file));
       }
     }
   } catch {
   }
-  return {};
+  return {
+    tool: {
+      roblox_setup: tool({
+        description: "One-time project setup for roblox-opencode. Copies 12 skills and vendor libraries (rbxutil, profilestore, promise, testez, t) to the project, writes luau-lsp config to opencode.json, and writes the core Roblox agent instructions to AGENTS.md. Run this when first opening a Roblox project.",
+        args: {},
+        async execute(_args, context) {
+          return await runSetup(context.directory);
+        }
+      })
+    }
+  };
 };
 async function runSetup(directory) {
   const { existsSync, mkdirSync, readFileSync, writeFileSync, cpSync } = await import("fs");
@@ -62,7 +72,7 @@ async function runSetup(directory) {
       config.lsp = {
         ...config.lsp || {},
         luau: {
-          command: ["luau-lsp", "--stdio"],
+          command: ["luau-lsp", "lsp"],
           extensions: [".luau"]
         }
       };
@@ -132,7 +142,7 @@ async function writeMcpConfig(directory, servers) {
   }
   const mcp = {};
   if (servers.studio) {
-    mcp.studio = { type: "local", command: ["npx", "-y", "@anthropic/studio-mcp"], enabled: true };
+    mcp.studio = { type: "local", command: ["npx", "-y", "@weppy/roblox-mcp"], enabled: true };
   }
   if (servers.robloxDocs) {
     mcp["roblox-docs"] = { type: "local", command: ["uvx", "mcp-roblox-docs"], enabled: true };

@@ -41,6 +41,8 @@ Categorize the error:
 - **Security** — Client-side issue that should be server-side, unvalidated remote
 - **Performance** — Timeout, memory, script contention
 
+If the `roblox-sharp-edges` skill is available, load it for known gotchas. Otherwise, proceed with general Luau knowledge.
+
 Identify:
 1. The exact line(s) causing the error
 2. Why the error occurs (root cause, not symptom)
