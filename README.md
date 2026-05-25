@@ -18,9 +18,10 @@ Then run `/setup-game` in your project to configure.
 
 ## What's included
 
-**16 skills** (loaded on-demand by the AI):
+**17 skills** (loaded on-demand by the AI):
 - roblox-luau-mastery — Luau syntax, idioms, type system
-- roblox-gui — UI layout, mobile-first design, reactive frameworks
+- roblox-gui — UI layout, mobile-first design, raw Instance patterns
+- roblox-gui-fusion — Fusion 0.3 reactive UI (shop, inventory, settings references)
 - roblox-animation-vfx — Animation, particles, effects
 - roblox-networking — Security hardening, validation, rate limiting
 - roblox-data — ProfileStore, DataStores, persistence patterns
@@ -41,6 +42,7 @@ Then run `/setup-game` in your project to configure.
 - `/sync-check` — Sync sanity check
 
 **Vendor libraries** (auto-placed with mention):
+- Fusion — Reactive UI framework (dphfox, 0.3)
 - ProfileStore — Data persistence with session locking
 - Trove — Cleanup/lifecycle management
 - Signal — Typed custom signals (Sleitnick/RbxUtil)
@@ -53,9 +55,9 @@ Then run `/setup-game` in your project to configure.
 
 ## How it works
 
-The plugin registers a `roblox_setup` tool and copies 3 commands to your global config on first launch. When you run `/setup-game`, it copies 15 skills and vendor libs to `.opencode/`, writes LSP config to `opencode.json`, generates `.luaurc` with vendor path aliases, and writes the core directives block to `AGENTS.md`.
+The plugin registers a `roblox_setup` tool and copies 3 commands to your global config on first launch. When you run `/setup-game`, it copies 17 skills and vendor libs to `.opencode/`, writes LSP config to `opencode.json`, generates `.luaurc` with vendor path aliases, and writes the core directives block to `AGENTS.md`.
 
-After setup, the plugin is dormant. The 15 skills do all the work — the AI loads them on-demand based on what you're working on.
+After setup, the plugin is dormant. The 17 skills do all the work — the AI loads them on-demand based on what you're working on.
 
 ## Prerequisites
 
