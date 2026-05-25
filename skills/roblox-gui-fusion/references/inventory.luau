@@ -1,12 +1,12 @@
 --[[
-    Inventory Screen — Fusion 0.2
+    Inventory Screen — Fusion 0.3
     Source patterns: VirtualButFake/fusion-components (MIT), dphfox/Fusion docs
+    Ported to Fusion 0.3 scoped syntax.
     
     A complete inventory interface with:
     - Scrollable grid of owned items
     - Item selection with detail panel
     - Equip/unequip toggle
-    - Context menu (drop, inspect)
     - Empty slot rendering
     - Responsive grid (fills available width)
     
@@ -15,20 +15,18 @@
     - Replace equipRemote/dropRemote with your RemoteFunctions
     - Adjust grid CellSize for your item icon dimensions
     - Add drag-and-drop by tracking InputBegan/InputChanged on cards
+    
+    Requires: Fusion 0.3 (wally: elttob/fusion@0.3.0)
 ]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 
 local Fusion = require(ReplicatedStorage.Packages.Fusion)
-local New = Fusion.New
-local Value = Fusion.Value
-local Computed = Fusion.Computed
-local ForPairs = Fusion.ForPairs
-local Spring = Fusion.Spring
+local scoped = Fusion.scoped
+local peek = Fusion.peek
 local Children = Fusion.Children
 local OnEvent = Fusion.OnEvent
-local Cleanup = Fusion.Cleanup
 
 --------------------------------------------------------------------------------
 -- Types
@@ -45,7 +43,7 @@ export type InventoryItem = {
 
 type InventoryProps = {
     Items: Fusion.Value<{ InventoryItem }>,
-    SlotCount: number, -- total slots (shows empty slots beyond item count)
+    SlotCount: number,
     Visible: Fusion.Value<boolean>,
     OnEquip: (itemId: string) -> boolean,
     OnUnequip: (itemId: string) -> boolean,
@@ -65,8 +63,6 @@ local COLORS = {
     Text = Color3.fromRGB(235, 235, 240),
     TextSecondary = Color3.fromRGB(155, 155, 170),
     Equipped = Color3.fromRGB(80, 200, 120),
-    ContextBg = Color3.fromRGB(35, 35, 48),
-    ContextHover = Color3.fromRGB(50, 50, 65),
     Rarity = {
         common = Color3.fromRGB(140, 140, 150),
         uncommon = Color3.fromRGB(80, 200, 80),
@@ -87,36 +83,35 @@ local FONT = {
 --------------------------------------------------------------------------------
 
 local function ItemSlot(
+    scope: Fusion.Scope,
     item: InventoryItem?,
     isSelected: Fusion.Computed<boolean>,
-    isHovering: Fusion.Value<boolean>,
-    onSelect: () -> (),
-    onRightClick: () -> ()
+    onSelect: () -> ()
 )
     if not item then
-        -- Empty slot
-        return New("Frame")({
+        return scope:New "Frame" {
             Name = "EmptySlot",
             BackgroundColor3 = COLORS.EmptySlot,
             [Children] = {
-                New("UICorner")({ CornerRadius = UDim.new(0, 6) }),
-                New("UIStroke")({
+                scope:New "UICorner" { CornerRadius = UDim.new(0, 6) },
+                scope:New "UIStroke" {
                     Color = Color3.fromRGB(40, 40, 50),
                     Thickness = 1,
                     Transparency = 0.5,
-                }),
+                },
             },
-        })
+        }
     end
 
+    local isHovering = scope:Value(false)
     local rarityColor = COLORS.Rarity[item.Rarity] or COLORS.Rarity.common
 
-    return New("TextButton")({
+    return scope:New "TextButton" {
         Name = "Slot_" .. item.Id,
-        BackgroundColor3 = Spring(Computed(function()
-            if isSelected:get() then
+        BackgroundColor3 = scope:Spring(scope:Computed(function(use)
+            if use(isSelected) then
                 return COLORS.SurfaceSelected
-            elseif isHovering:get() then
+            elseif use(isHovering) then
                 return COLORS.SurfaceHover
             end
             return COLORS.Surface
@@ -124,45 +119,44 @@ local function ItemSlot(
         AutoButtonColor = false,
         Text = "",
 
-        [OnEvent("Activated")] = onSelect,
-        [OnEvent("MouseButton2Click")] = onRightClick,
-        [OnEvent("MouseEnter")] = function() isHovering:set(true) end,
-        [OnEvent("MouseLeave")] = function() isHovering:set(false) end,
+        [OnEvent "Activated"] = onSelect,
+        [OnEvent "MouseEnter"] = function() isHovering:set(true) end,
+        [OnEvent "MouseLeave"] = function() isHovering:set(false) end,
 
         [Children] = {
-            New("UICorner")({ CornerRadius = UDim.new(0, 6) }),
+            scope:New "UICorner" { CornerRadius = UDim.new(0, 6) },
 
             -- Rarity border
-            New("UIStroke")({
+            scope:New "UIStroke" {
                 Color = rarityColor,
                 Thickness = 1.5,
-                Transparency = Spring(Computed(function()
-                    return if isSelected:get() then 0 else 0.6
+                Transparency = scope:Spring(scope:Computed(function(use)
+                    return if use(isSelected) then 0 else 0.6
                 end), 25),
-            }),
+            },
 
             -- Icon
-            if item.Icon then New("ImageLabel")({
+            if item.Icon then scope:New "ImageLabel" {
                 Name = "Icon",
                 BackgroundTransparency = 1,
                 Size = UDim2.new(1, -12, 1, -20),
                 Position = UDim2.fromOffset(6, 4),
                 Image = item.Icon,
                 ScaleType = Enum.ScaleType.Fit,
-            }) else nil,
+            } else nil,
 
             -- Equipped indicator
-            if item.Equipped then New("Frame")({
+            if item.Equipped then scope:New "Frame" {
                 Name = "EquippedDot",
                 AnchorPoint = Vector2.new(1, 0),
                 Position = UDim2.new(1, -4, 0, 4),
                 Size = UDim2.fromOffset(8, 8),
                 BackgroundColor3 = COLORS.Equipped,
-                [Children] = { New("UICorner")({ CornerRadius = UDim.new(1, 0) }) },
-            }) else nil,
+                [Children] = { scope:New "UICorner" { CornerRadius = UDim.new(1, 0) } },
+            } else nil,
 
             -- Item name at bottom
-            New("TextLabel")({
+            scope:New "TextLabel" {
                 Name = "ItemName",
                 BackgroundTransparency = 1,
                 AnchorPoint = Vector2.new(0, 1),
@@ -174,9 +168,9 @@ local function ItemSlot(
                 TextSize = 10,
                 TextTruncate = Enum.TextTruncate.AtEnd,
                 TextXAlignment = Enum.TextXAlignment.Center,
-            }),
+            },
         },
-    })
+    }
 end
 
 --------------------------------------------------------------------------------
@@ -184,43 +178,44 @@ end
 --------------------------------------------------------------------------------
 
 local function DetailPanel(
-    selectedItem: Fusion.Value<InventoryItem?>,
+    scope: Fusion.Scope,
+    selectedItem: Fusion.Computed<InventoryItem?>,
     onEquipToggle: () -> (),
     onDrop: () -> ()
 )
-    return New("Frame")({
+    return scope:New "Frame" {
         Name = "DetailPanel",
         BackgroundColor3 = COLORS.Surface,
         Size = UDim2.new(1, 0, 0, 100),
-        Visible = Computed(function()
-            return selectedItem:get() ~= nil
+        Visible = scope:Computed(function(use)
+            return use(selectedItem) ~= nil
         end),
 
         [Children] = {
-            New("UICorner")({ CornerRadius = UDim.new(0, 8) }),
-            New("UIPadding")({
+            scope:New "UICorner" { CornerRadius = UDim.new(0, 8) },
+            scope:New "UIPadding" {
                 PaddingTop = UDim.new(0, 12),
                 PaddingBottom = UDim.new(0, 12),
                 PaddingLeft = UDim.new(0, 12),
                 PaddingRight = UDim.new(0, 12),
-            }),
-            New("UIListLayout")({
+            },
+            scope:New "UIListLayout" {
                 FillDirection = Enum.FillDirection.Vertical,
                 Padding = UDim.new(0, 8),
                 SortOrder = Enum.SortOrder.LayoutOrder,
-            }),
+            },
 
             -- Item name + rarity
-            New("TextLabel")({
+            scope:New "TextLabel" {
                 BackgroundTransparency = 1,
                 Size = UDim2.new(1, 0, 0, 18),
                 FontFace = FONT.Title,
-                Text = Computed(function()
-                    local item = selectedItem:get()
+                Text = scope:Computed(function(use)
+                    local item = use(selectedItem)
                     return if item then item.Name else ""
                 end),
-                TextColor3 = Computed(function()
-                    local item = selectedItem:get()
+                TextColor3 = scope:Computed(function(use)
+                    local item = use(selectedItem)
                     if item then
                         return COLORS.Rarity[item.Rarity] or COLORS.Text
                     end
@@ -229,15 +224,15 @@ local function DetailPanel(
                 TextSize = 15,
                 TextXAlignment = Enum.TextXAlignment.Left,
                 LayoutOrder = 1,
-            }),
+            },
 
             -- Description
-            New("TextLabel")({
+            scope:New "TextLabel" {
                 BackgroundTransparency = 1,
                 Size = UDim2.new(1, 0, 0, 14),
                 FontFace = FONT.Small,
-                Text = Computed(function()
-                    local item = selectedItem:get()
+                Text = scope:Computed(function(use)
+                    local item = use(selectedItem)
                     return if item and item.Description then item.Description else ""
                 end),
                 TextColor3 = COLORS.TextSecondary,
@@ -245,39 +240,39 @@ local function DetailPanel(
                 TextWrapped = true,
                 TextXAlignment = Enum.TextXAlignment.Left,
                 LayoutOrder = 2,
-            }),
+            },
 
             -- Action buttons
-            New("Frame")({
+            scope:New "Frame" {
                 BackgroundTransparency = 1,
                 Size = UDim2.new(1, 0, 0, 28),
                 LayoutOrder = 3,
                 [Children] = {
-                    New("UIListLayout")({
+                    scope:New "UIListLayout" {
                         FillDirection = Enum.FillDirection.Horizontal,
                         Padding = UDim.new(0, 8),
                         VerticalAlignment = Enum.VerticalAlignment.Center,
-                    }),
+                    },
 
                     -- Equip/Unequip button
-                    New("TextButton")({
+                    scope:New "TextButton" {
                         Name = "EquipBtn",
                         BackgroundColor3 = COLORS.Equipped,
                         Size = UDim2.new(0, 80, 0, 28),
                         FontFace = FONT.Body,
-                        Text = Computed(function()
-                            local item = selectedItem:get()
+                        Text = scope:Computed(function(use)
+                            local item = use(selectedItem)
                             return if item and item.Equipped then "Unequip" else "Equip"
                         end),
                         TextColor3 = COLORS.Text,
                         TextSize = 12,
                         AutoButtonColor = false,
-                        [OnEvent("Activated")] = onEquipToggle,
-                        [Children] = { New("UICorner")({ CornerRadius = UDim.new(0, 4) }) },
-                    }),
+                        [OnEvent "Activated"] = onEquipToggle,
+                        [Children] = { scope:New "UICorner" { CornerRadius = UDim.new(0, 4) } },
+                    },
 
                     -- Drop button
-                    New("TextButton")({
+                    scope:New "TextButton" {
                         Name = "DropBtn",
                         BackgroundColor3 = Color3.fromRGB(60, 30, 30),
                         Size = UDim2.new(0, 60, 0, 28),
@@ -286,13 +281,13 @@ local function DetailPanel(
                         TextColor3 = Color3.fromRGB(220, 100, 100),
                         TextSize = 12,
                         AutoButtonColor = false,
-                        [OnEvent("Activated")] = onDrop,
-                        [Children] = { New("UICorner")({ CornerRadius = UDim.new(0, 4) }) },
-                    }),
+                        [OnEvent "Activated"] = onDrop,
+                        [Children] = { scope:New "UICorner" { CornerRadius = UDim.new(0, 4) } },
+                    },
                 },
-            }),
+            },
         },
-    })
+    }
 end
 
 --------------------------------------------------------------------------------
@@ -300,20 +295,22 @@ end
 --------------------------------------------------------------------------------
 
 local function InventoryScreen(props: InventoryProps)
-    local selectedItemId: Fusion.Value<string?> = Value(nil)
+    local scope = scoped(Fusion)
 
-    local selectedItem: Fusion.Computed<InventoryItem?> = Computed(function()
-        local id = selectedItemId:get()
+    local selectedItemId: Fusion.Value<string?> = scope:Value(nil)
+
+    local selectedItem = scope:Computed(function(use)
+        local id = use(selectedItemId)
         if not id then return nil end
-        for _, item in props.Items:get() do
+        for _, item in use(props.Items) do
             if item.Id == id then return item end
         end
         return nil
     end)
 
     -- Build slot data: items + empty slots to fill SlotCount
-    local slotData = Computed(function()
-        local items = props.Items:get()
+    local slotData = scope:Computed(function(use)
+        local items = use(props.Items)
         local slots: { InventoryItem? } = {}
         for i, item in items do
             slots[i] = item
@@ -324,15 +321,7 @@ local function InventoryScreen(props: InventoryProps)
         return slots
     end)
 
-    local hoverStates: { [number]: Fusion.Value<boolean> } = {}
-    local function getHover(index: number): Fusion.Value<boolean>
-        if not hoverStates[index] then
-            hoverStates[index] = Value(false)
-        end
-        return hoverStates[index]
-    end
-
-    return New("ScreenGui")({
+    local screenGui = scope:New "ScreenGui" {
         Name = "InventoryScreen",
         ResetOnSpawn = false,
         IgnoreGuiInset = true,
@@ -341,26 +330,26 @@ local function InventoryScreen(props: InventoryProps)
         Parent = Players.LocalPlayer:WaitForChild("PlayerGui"),
 
         [Children] = {
-            New("Frame")({
+            scope:New "Frame" {
                 Name = "Container",
                 BackgroundColor3 = COLORS.Background,
                 Size = UDim2.new(1, 0, 1, 0),
 
                 [Children] = {
-                    New("UIPadding")({
+                    scope:New "UIPadding" {
                         PaddingTop = UDim.new(0, 60),
                         PaddingBottom = UDim.new(0, 12),
                         PaddingLeft = UDim.new(0, 16),
                         PaddingRight = UDim.new(0, 16),
-                    }),
-                    New("UIListLayout")({
+                    },
+                    scope:New "UIListLayout" {
                         FillDirection = Enum.FillDirection.Vertical,
                         Padding = UDim.new(0, 12),
                         SortOrder = Enum.SortOrder.LayoutOrder,
-                    }),
+                    },
 
                     -- Title
-                    New("TextLabel")({
+                    scope:New "TextLabel" {
                         Name = "Title",
                         BackgroundTransparency = 1,
                         Size = UDim2.new(1, 0, 0, 28),
@@ -370,13 +359,13 @@ local function InventoryScreen(props: InventoryProps)
                         TextSize = 20,
                         TextXAlignment = Enum.TextXAlignment.Left,
                         LayoutOrder = 1,
-                    }),
+                    },
 
                     -- Item grid (scrollable)
-                    New("ScrollingFrame")({
+                    scope:New "ScrollingFrame" {
                         Name = "ItemGrid",
                         BackgroundTransparency = 1,
-                        Size = UDim2.new(1, 0, 1, -150), -- leave room for detail panel
+                        Size = UDim2.new(1, 0, 1, -150),
                         LayoutOrder = 2,
                         AutomaticCanvasSize = Enum.AutomaticSize.Y,
                         ScrollingDirection = Enum.ScrollingDirection.Y,
@@ -385,38 +374,32 @@ local function InventoryScreen(props: InventoryProps)
                         CanvasSize = UDim2.new(0, 0, 0, 0),
 
                         [Children] = {
-                            New("UIGridLayout")({
+                            scope:New "UIGridLayout" {
                                 CellSize = UDim2.new(0, 72, 0, 80),
                                 CellPadding = UDim2.new(0, 6, 0, 6),
                                 FillDirection = Enum.FillDirection.Horizontal,
                                 FillDirectionMaxCells = 0,
                                 HorizontalAlignment = Enum.HorizontalAlignment.Center,
                                 SortOrder = Enum.SortOrder.LayoutOrder,
-                            }),
+                            },
 
-                            ForPairs(slotData, function(index, item)
-                                local isSelected = Computed(function()
-                                    return item ~= nil and selectedItemId:get() == item.Id
+                            scope:ForPairs(slotData, function(use, slotScope, index, item)
+                                local isSelected = slotScope:Computed(function(use)
+                                    return item ~= nil and use(selectedItemId) == item.Id
                                 end)
 
-                                return index, ItemSlot(item, isSelected, getHover(index), function()
-                                    if item then
-                                        selectedItemId:set(item.Id)
-                                    end
-                                end, function()
-                                    -- Right-click: could open context menu
+                                return index, ItemSlot(slotScope, item, isSelected, function()
                                     if item then
                                         selectedItemId:set(item.Id)
                                     end
                                 end)
-                            end, Fusion.cleanup),
+                            end),
                         },
-                    }),
+                    },
 
                     -- Detail panel at bottom
-                    DetailPanel(selectedItem, function()
-                        -- Equip/Unequip toggle
-                        local item = selectedItem:get()
+                    DetailPanel(scope, selectedItem, function()
+                        local item = peek(selectedItem)
                         if not item then return end
                         if item.Equipped then
                             props.OnUnequip(item.Id)
@@ -424,16 +407,17 @@ local function InventoryScreen(props: InventoryProps)
                             props.OnEquip(item.Id)
                         end
                     end, function()
-                        -- Drop
-                        local item = selectedItem:get()
+                        local item = peek(selectedItem)
                         if not item then return end
                         props.OnDrop(item.Id)
                         selectedItemId:set(nil)
                     end),
                 },
-            }),
+            },
         },
-    })
+    }
+
+    return screenGui, scope
 end
 
 return InventoryScreen

@@ -28,9 +28,6 @@ All GUI code runs on the **client** (LocalScripts). UI objects live under `Start
 **Load Full Reference below only when you need specific layout examples or implementation patterns.**
 
 Key rules:
-- **Default framework: Fusion** (dphfox/Fusion, MIT). Use for greenfield game UI. Follow existing patterns on established projects.
-- Reference implementations in `references/` use Fusion 0.2 idioms (New, Value, Computed, ForPairs, Children, Spring).
-- Source patterns: VirtualButFake/fusion-components (MIT, 31 components).
 - Mobile-first: design for phone, scale up. Touch targets minimum 48x48px.
 - Scale (0-1 proportional) for position/size. Offset only for fixed padding/icons.
 - Container Frame Rule: every logical group gets a Frame with layout modifier inside.
@@ -40,6 +37,7 @@ Key rules:
 - Never use absolute pixel sizes for main containers. UISizeConstraint for min/max bounds.
 - ScrollingFrame: set CanvasSize or AutomaticCanvasSize. UIListLayout inside for content.
 - Common AI mistake: forgetting to set LayoutOrder on children when using layout modifiers.
+- For complex stateful UI (shops, inventories, settings), see the `roblox-gui-fusion` skill.
 
 ---
 
@@ -1082,68 +1080,6 @@ scrollFrame.ElasticBehavior = Enum.ElasticBehavior.Never
 ```
 
 Source: Roblox Scrolling Frames docs (create.roblox.com/docs/ui/scrolling-frames)
-
----
-
-## 15. Reactive UI Frameworks
-
-For complex UI with dynamic state, consider a reactive framework instead of manual Instance manipulation.
-
-### Fusion (dphfox/Fusion, MIT, 764★)
-
-The gold standard for reactive Roblox UI. Declarative syntax with state management:
-
-```luau
-local Fusion = require(ReplicatedStorage.Fusion)
-local New, Value, Computed, Children = Fusion.New, Fusion.Value, Fusion.Computed, Fusion.Children
-
-local count = Value(0)
-
-local counterGui = New("ScreenGui")({
-    [Children] = New("TextLabel")({
-        Text = Computed(function()
-            return `Count: ${count:get()}`
-        end),
-        Size = UDim2.new(0, 200, 0, 50),
-    })
-})
-
--- Update state, UI re-renders automatically
-count:set(count:get() + 1)
-```
-
-When the state changes, only the affected properties re-render. No manual updates needed.
-
-### Vide (centau/vide, MIT, 270★)
-
-Solid.js-inspired. Lighter weight, more concise:
-
-```luau
-local vide = require(ReplicatedStorage.vide)
-local create, source, effect = vide.create, vide.source, vide.effect
-
-local count = source(0)
-
-local gui = create("ScreenGui")({
-    create("TextLabel")({
-        Text = function() return `Count: ${count()}` end,
-        Size = UDim2.new(0, 200, 0, 50),
-    })
-})
-```
-
-### When to Use Reactive Frameworks
-
-| Scenario | Approach |
-|----------|----------|
-| Simple HUD (health bar, ammo) | Manual Instance manipulation. No framework needed. |
-| Shop with filtering/sorting | Fusion or Vide. State changes drive UI updates. |
-| Settings menu with toggles | Either works. Manual if <5 toggles, reactive if more. |
-| Complex inventory with drag-and-drop | Fusion. State management pays off at this complexity. |
-
-### Don't Over-Engineer
-
-If the UI is simple (a few labels, a button, a health bar), manual Instance manipulation is fine. Don't pull in Fusion for a HUD. The framework pays for itself when state changes are frequent and UI is complex.
 
 ---
 

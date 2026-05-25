@@ -24,7 +24,7 @@ var RobloxOpenCode = async () => {
   return {
     tool: {
       roblox_setup: tool({
-        description: "One-time project setup for roblox-opencode. Copies 16 skills and vendor libraries (rbxutil, profilestore, promise, testez, t) to the project, writes luau-lsp config to opencode.json, and writes the core Roblox agent instructions to AGENTS.md. Run this when first opening a Roblox project.",
+        description: "One-time project setup for roblox-opencode. Copies 17 skills and vendor libraries (rbxutil, profilestore, promise, testez, t, fusion) to the project, writes luau-lsp config to opencode.json, and writes the core Roblox agent instructions to AGENTS.md. Run this when first opening a Roblox project.",
         args: {},
         async execute(_args, context) {
           if (!context.directory) {
