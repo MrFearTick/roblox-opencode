@@ -473,7 +473,7 @@ Subscriptions provide recurring monthly revenue. Players pay a monthly Robux fee
 | Method / Event | Purpose |
 |---|---|
 | `MarketplaceService:PromptSubscriptionPurchase(player, subscriptionId)` | Show the subscription purchase prompt |
-| `MarketplaceService.SubscriptionPurchaseFinished` | Fires when a subscription is purchased or cancelled |
+| `MarketplaceService.PromptSubscriptionPurchaseFinished` | Fires when the subscription purchase prompt closes (does NOT confirm purchase — use UserHasSubscriptionAsync to verify) |
 | `MarketplaceService:GetSubscriptionProductInfoAsync(subscriptionId)` | Get subscription tier details (price, name, description) |
 | `MarketplaceService:UserHasSubscriptionAsync(userId, subscriptionId)` | Check if a player has an active subscription |
 
@@ -520,14 +520,18 @@ local function onPlayerAdded(player: Player)
 	end
 end
 
--- Handle purchase and cancellation events
-MarketplaceService.SubscriptionPurchaseFinished:Connect(function(player: Player, subscriptionId: number, wasPurchased: boolean)
+-- Handle prompt close (NOTE: this does NOT confirm purchase succeeded)
+-- Use UserHasSubscriptionAsync to verify actual subscription status
+MarketplaceService.PromptSubscriptionPurchaseFinished:Connect(function(player: Player, subscriptionId: string, didTryPurchasing: boolean)
+	if not didTryPurchasing then return end
+	-- Player attempted purchase — verify it actually went through
 	for key, sub in SUBSCRIPTIONS do
 		if sub.id == subscriptionId then
-			if wasPurchased then
+			local success, hasSub = pcall(function()
+				return MarketplaceService:UserHasSubscriptionAsync(player.UserId, sub.id)
+			end)
+			if success and hasSub then
 				sub.grant(player)
-			else
-				sub.revoke(player)
 			end
 			break
 		end
@@ -547,7 +551,7 @@ Players.PlayerAdded:Connect(onPlayerAdded)
 - **Recurring currency:** Give a daily or monthly currency stipend that incentivizes logging in
 - **Exclusive content:** Cosmetics, titles, frames, and emotes that are permanently unlocked for subscribers
 - **Non-disruptive:** Free players should still enjoy the full game loop. Subscribers get bonuses, not exclusive gameplay
-- **Cancellation:** Handle the `SubscriptionPurchaseFinished` event for cancellations to revoke benefits promptly
+- **Cancellation:** Use `UserHasSubscriptionAsync` on player join to detect lapsed subscriptions and revoke benefits. The prompt event only fires when the UI closes, not on actual cancellation.
 
 ---
 
@@ -732,7 +736,7 @@ local Players = game:GetService("Players")
 
 local function isEligibleForRandomItems(player: Player): boolean
 	local success, policyInfo = pcall(function()
-		return PolicyService:GetPolicyInfoForPlayerAsync(player.UserId)
+		return PolicyService:GetPolicyInfoForPlayerAsync(player)
 	end)
 
 	if not success then
