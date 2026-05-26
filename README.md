@@ -107,7 +107,6 @@ The AI loads relevant skills on-demand based on your prompt. Ask it to build a s
 ## Prerequisites
 
 - [OpenCode](https://opencode.ai)
-- [luau-lsp](https://github.com/JohnnyMorganz/luau-lsp) for Luau diagnostics (setup checks and guides install)
 - [Roblox Studio](https://www.roblox.com/create) with Script Sync and MCP server enabled
 
 ## Update
