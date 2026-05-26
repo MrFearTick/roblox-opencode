@@ -1,10 +1,22 @@
-# roblox-opencode
+<p align="center">
+  <img src="https://img.shields.io/badge/Roblox-OpenCode-blue?style=for-the-badge&logo=roblox&logoColor=white" alt="roblox-opencode" />
+</p>
 
-OpenCode plugin for Roblox/Luau development. Makes AI coding assistants competent at building Roblox games.
+<p align="center">
+  <img src="https://img.shields.io/npm/v/roblox-opencode?style=flat-square&color=blue" alt="npm version" />
+  <img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="MIT license" />
+  <img src="https://img.shields.io/badge/Luau-100%25-purple?style=flat-square" alt="Luau" />
+  <img src="https://img.shields.io/badge/Fusion-0.3-orange?style=flat-square" alt="Fusion 0.3" />
+</p>
+
+<p align="center">
+  An OpenCode plugin that gives AI assistants deep knowledge of Roblox development.<br/>
+  17 skills, production-ready vendor libraries, and complete UI references — so the AI writes code that actually works in Studio.
+</p>
+
+---
 
 ## Install
-
-Add to your `opencode.json`:
 
 ```json
 {
@@ -12,69 +24,87 @@ Add to your `opencode.json`:
 }
 ```
 
-Restart opencode. The plugin auto-installs from npm on startup.
+Add to your `opencode.json`, restart, then run `/setup-game` in your project.
 
-Then run `/setup-game` in your project to configure.
+## What it does
 
-## What's included
+Without this plugin, AI assistants treat Roblox like a generic Lua environment. They miss session locking, write exploitable remotes, ignore mobile players, and produce UI that breaks on phones.
 
-**17 skills** (loaded on-demand by the AI):
-- roblox-luau-mastery — Luau syntax, idioms, type system
-- roblox-gui — UI layout, mobile-first design, raw Instance patterns
-- roblox-gui-fusion — Fusion 0.3 reactive UI (shop, inventory, settings references)
-- roblox-animation-vfx — Animation, particles, effects
-- roblox-networking — Security hardening, validation, rate limiting
-- roblox-data — ProfileStore, DataStores, persistence patterns
-- roblox-testing — TestEZ, BDD patterns, test strategy
-- roblox-tooling — Studio MCP, luau-lsp, diagnostics
-- roblox-architecture — Service hierarchy, 7 foundational patterns
-- roblox-runtime — RunService, StreamingEnabled, memory management
-- roblox-sharp-edges — 12 production footguns by severity
-- roblox-monetization — GamePasses, DevProducts, TOS compliance
-- roblox-sync — Script Sync setup and troubleshooting
-- roblox-analytics — AnalyticsService, custom events, economy tracking, funnels
-- roblox-code-review — Review with security/performance/monetization lenses
-- roblox-debug — Iterative debug loop for Luau/Roblox issues
-- roblox-publish-checklist — Pre-ship verification gauntlet
+With it, the AI knows:
 
-**2 commands** (type `/` to use):
-- `/setup-game` — One-time project config (skills, vendor, LSP, sync)
-- `/sync-check` — Sync sanity check
+- How to structure a game (services, lifecycle, module patterns)
+- How to persist data safely (ProfileStore, session locking, migrations)
+- How to build reactive UI (Fusion 0.3, with complete shop/inventory/settings references)
+- How to secure remotes (validation, rate limiting, type checking)
+- How to ship (analytics, monetization, TOS compliance, publish checklist)
+- What NOT to do (13 documented production footguns ranked by severity)
 
-**Vendor libraries** (auto-placed with mention):
-- Fusion — Reactive UI framework (dphfox, 0.3)
-- ProfileStore — Data persistence with session locking
-- Trove — Cleanup/lifecycle management
-- Signal — Typed custom signals (Sleitnick/RbxUtil)
-- Promise — Async flow control (evaera)
-- Comm — Typed client-server remotes (Sleitnick/RbxUtil)
-- Component — CollectionService tag binding (Sleitnick/RbxUtil)
-- t — Runtime type checking (osyrisrblx, recommended)
-- TestEZ — BDD testing framework (Roblox, recommended)
-- 25+ additional RbxUtil packages available on demand (see .opencode/vendor/README.md)
+## Skills
+
+Loaded on-demand based on what you're working on. The AI picks the right ones automatically.
+
+| Domain | Skill | Covers |
+|--------|-------|--------|
+| Language | `roblox-luau-mastery` | Syntax, idioms, type system, strict mode |
+| UI | `roblox-gui` | Layout fundamentals, mobile-first, responsive patterns |
+| UI | `roblox-gui-fusion` | Fusion 0.3 reactive UI with full screen references |
+| VFX | `roblox-animation-vfx` | Tweens, particles, trails, highlights, camera shake |
+| Networking | `roblox-networking` | Security hardening, validation, rate limiting |
+| Data | `roblox-data` | ProfileStore, schema design, migrations, BindToClose |
+| Testing | `roblox-testing` | TestEZ, BDD patterns, test strategy |
+| Tooling | `roblox-tooling` | Studio MCP, luau-lsp, diagnostics |
+| Architecture | `roblox-architecture` | Service hierarchy, 7 foundational patterns |
+| Runtime | `roblox-runtime` | RunService, StreamingEnabled, memory |
+| Gotchas | `roblox-sharp-edges` | 13 production footguns by severity |
+| Money | `roblox-monetization` | GamePasses, DevProducts, subscriptions, TOS |
+| Sync | `roblox-sync` | Script Sync setup and troubleshooting |
+| Analytics | `roblox-analytics` | Events, economy tracking, funnels |
+| Review | `roblox-code-review` | Security, performance, networking, data lenses |
+| Debug | `roblox-debug` | Iterative debug loop for Luau issues |
+| Ship | `roblox-publish-checklist` | Pre-ship verification gauntlet |
+
+## Vendor libraries
+
+Copied to your project on setup. No Wally required.
+
+| Library | Purpose |
+|---------|---------|
+| **Fusion** | Reactive UI framework (dphfox, 0.3) |
+| **ProfileStore** | Data persistence with session locking |
+| **Promise** | Async flow control (evaera) |
+| **Signal** | Typed custom signals (Sleitnick) |
+| **Trove** | Cleanup/lifecycle management |
+| **Comm** | Typed client-server remotes |
+| **Component** | CollectionService tag binding |
+| **t** | Runtime type checking |
+| **TestEZ** | BDD testing framework |
+| + 25 more | RbxUtil packages on demand |
+
+## Commands
+
+| Command | What it does |
+|---------|-------------|
+| `/setup-game` | One-time project config — skills, vendor, LSP, AGENTS.md |
+| `/sync-check` | Verify Script Sync is working correctly |
 
 ## How it works
 
-The plugin registers a `roblox_setup` tool and copies 3 commands to your global config on first launch. When you run `/setup-game`, it copies 17 skills and vendor libs to `.opencode/`, writes LSP config to `opencode.json`, generates `.luaurc` with vendor path aliases, and writes the core directives block to `AGENTS.md`.
+1. Plugin installs via npm on OpenCode startup
+2. You run `/setup-game` once per project
+3. Setup copies skills + vendor libs to `.opencode/`, writes LSP config, generates `.luaurc` aliases, injects a core block into `AGENTS.md`
+4. After that, the plugin is dormant — the skills do all the work
 
-After setup, the plugin is dormant. The 17 skills do all the work — the AI loads them on-demand based on what you're working on.
+The AI loads relevant skills on-demand based on your prompt. Ask it to build a shop and it pulls in `roblox-gui-fusion`. Ask it to review security and it loads `roblox-code-review` with the networking lens.
 
 ## Prerequisites
 
+- [OpenCode](https://opencode.ai) — AI coding assistant
 - [luau-lsp](https://github.com/JohnnyMorganz/luau-lsp) — Luau diagnostics (setup checks and guides install)
 - [Roblox Studio](https://www.roblox.com/create) — With Script Sync and MCP server enabled
 
 ## Update
 
-Update the version in `opencode.json` (or use `"roblox-opencode"` for latest), then restart opencode.
-
-To force re-setup in a project (overwrites skills, vendor, config):
-
-```
-/setup-game
-```
-
-Content outside managed markers in AGENTS.md is preserved.
+Update the version in `opencode.json` (or use `"roblox-opencode"` for latest), restart OpenCode. Run `/setup-game` again to refresh skills and vendor libs. Content outside managed markers in `AGENTS.md` is preserved.
 
 ## Contributors
 
