@@ -4,12 +4,12 @@ import { fileURLToPath } from "node:url";
 var VERSION = "1.0.0";
 var MARKER_BEGIN = `<!-- roblox-opencode ${VERSION} BEGIN - managed block, edits inside will be overwritten -->`;
 var MARKER_END = "<!-- roblox-opencode END -->";
-var RobloxOpenCode = async () => {
+var RobloxOpenCode = async (ctx) => {
+  const { existsSync, mkdirSync, readdirSync, copyFileSync, readFileSync, writeFileSync } = await import("fs");
+  const { join } = await import("path");
+  const os = await import("os");
+  const pkgDir = join(import.meta.dirname ?? fileURLToPath(new URL(".", import.meta.url)), "..");
   try {
-    const { existsSync, mkdirSync, readdirSync, copyFileSync } = await import("fs");
-    const { join } = await import("path");
-    const os = await import("os");
-    const pkgDir = join(import.meta.dirname ?? fileURLToPath(new URL(".", import.meta.url)), "..");
     const srcDir = join(pkgDir, "commands");
     const destDir = join(os.homedir(), ".config", "opencode", "commands");
     if (existsSync(srcDir)) {
@@ -17,6 +17,22 @@ var RobloxOpenCode = async () => {
       const files = readdirSync(srcDir).filter((f) => f.endsWith(".md"));
       for (const file of files) {
         copyFileSync(join(srcDir, file), join(destDir, file));
+      }
+    }
+  } catch {
+  }
+  try {
+    const directory = ctx?.directory;
+    if (directory) {
+      const versionFile = join(directory, ".opencode", ".roblox-opencode-version");
+      let installedVersion = "";
+      if (existsSync(versionFile)) {
+        installedVersion = readFileSync(versionFile, "utf-8").trim();
+      }
+      if (installedVersion !== VERSION && existsSync(join(directory, ".opencode", "skills"))) {
+        await runSetup(directory);
+        mkdirSync(join(directory, ".opencode"), { recursive: true });
+        writeFileSync(versionFile, VERSION + "\n");
       }
     }
   } catch {
@@ -153,6 +169,12 @@ ${MARKER_END}`;
         error: err instanceof Error ? err.message : String(err)
       });
     }
+  }
+  try {
+    const versionFile = join(projectDir, ".opencode", ".roblox-opencode-version");
+    mkdirSync(join(projectDir, ".opencode"), { recursive: true });
+    writeFileSync(versionFile, VERSION + "\n");
+  } catch {
   }
   return results;
 }

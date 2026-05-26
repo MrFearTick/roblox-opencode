@@ -10,16 +10,18 @@ const MARKER_END = "<!-- roblox-opencode END -->"
 /**
  * Plugin entry point.
  * On first load: copies commands to global config (~/.config/opencode/commands/).
+ * On every load: checks if project skills need updating (version mismatch).
  * Registers roblox_setup tool for project configuration.
  */
-export const RobloxOpenCode: Plugin = async () => {
+export const RobloxOpenCode: Plugin = async (ctx) => {
+  const { existsSync, mkdirSync, readdirSync, copyFileSync, readFileSync, writeFileSync } = await import("fs")
+  const { join } = await import("path")
+  const os = await import("os")
+
+  const pkgDir = join(import.meta.dirname ?? fileURLToPath(new URL(".", import.meta.url)), "..")
+
   // Copy commands to global config (idempotent - always overwrites)
   try {
-    const { existsSync, mkdirSync, readdirSync, copyFileSync } = await import("fs")
-    const { join } = await import("path")
-    const os = await import("os")
-
-    const pkgDir = join(import.meta.dirname ?? fileURLToPath(new URL(".", import.meta.url)), "..")
     const srcDir = join(pkgDir, "commands")
     const destDir = join(os.homedir(), ".config", "opencode", "commands")
 
@@ -32,6 +34,26 @@ export const RobloxOpenCode: Plugin = async () => {
     }
   } catch {
     // non-fatal
+  }
+
+  // Auto-sync skills if version changed (silent upgrade on plugin load)
+  try {
+    const directory = ctx?.directory
+    if (directory) {
+      const versionFile = join(directory, ".opencode", ".roblox-opencode-version")
+      let installedVersion = ""
+      if (existsSync(versionFile)) {
+        installedVersion = readFileSync(versionFile, "utf-8").trim()
+      }
+      if (installedVersion !== VERSION && existsSync(join(directory, ".opencode", "skills"))) {
+        // Only auto-sync if setup was run before (skills dir exists)
+        await runSetup(directory)
+        mkdirSync(join(directory, ".opencode"), { recursive: true })
+        writeFileSync(versionFile, VERSION + "\n")
+      }
+    }
+  } catch {
+    // non-fatal - user can always run /setup-game manually
   }
 
   return {
@@ -183,6 +205,16 @@ export async function runSetup(directory: string) {
       })
     }
   }
+
+  // Write version marker so auto-sync knows when to update
+  try {
+    const versionFile = join(projectDir, ".opencode", ".roblox-opencode-version")
+    mkdirSync(join(projectDir, ".opencode"), { recursive: true })
+    writeFileSync(versionFile, VERSION + "\n")
+  } catch {
+    // non-fatal
+  }
+
   return results
 }
 
