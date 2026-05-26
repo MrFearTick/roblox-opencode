@@ -54,6 +54,7 @@ Key rules:
 - Type system: gradual typing, `typeof()` for narrowing, `::` for casting, `export type` for cross-module
 - Prefer backtick interpolation over `..` concatenation
 - Use vendored libs (Promise, Trove, Signal, Comm, Component, ProfileStore) over raw equivalents
+- Local function order: callees above callers (no hoisting). Forward-declare for mutual recursion.
 
 ---
 
@@ -1192,6 +1193,7 @@ MyClass.new()           -- dot: no self
 - Use backtick interpolation (`{expr}`) for all string building. Never use `..` concatenation.
 - Use `table.freeze()` for configuration tables that should not be modified.
 - Never use Luau reserved keywords (`return`, `continue`, `local`, `end`, `function`, etc.) as identifiers - parameter names, local variables, function names, or module methods like `module:return()` all cause parse-time syntax errors.
+- Declare local functions before they are called - Luau has no hoisting. Callees above callers. Use forward declaration (`local fnName`) for mutual recursion.
 
 ---
 
@@ -1434,6 +1436,48 @@ local module = {}
 function module:onReturn() end
 function module:onResume() end
 ```
+
+### Local Function Declaration Order
+
+Luau has no hoisting - a `local function` is invisible to code above its declaration. This is a common pitfall because many languages (JS, Lua, Python) do hoist function declarations.
+
+```luau
+-- BAD: helperB is nil when functionA runs
+local function functionA()
+    helperB() -- ERROR: attempt to call a nil value
+end
+
+local function helperB()
+    print("helper")
+end
+
+-- GOOD: callee declared before caller
+local function helperB()
+    print("helper")
+end
+
+local function functionA()
+    helperB() -- works
+end
+```
+
+For mutual recursion (A calls B, B calls A), use a forward declaration:
+
+```luau
+local functionB  -- forward declaration (declares variable, no assignment)
+
+local function functionA(x: number)
+    if x <= 0 then return end
+    functionB(x - 1)
+end
+
+function functionB(x: number) -- no 'local' here (already declared above)
+    if x <= 0 then return end
+    functionA(x - 1)
+end
+```
+
+**Rule:** Callees above callers, always. If a `local function` is called by code above its definition, that is a runtime nil-error bug.
 
 ### Equality and Type Coercion
 
