@@ -76,6 +76,10 @@ To force re-setup in a project (overwrites skills, vendor, config):
 
 Content outside managed markers in AGENTS.md is preserved.
 
+## Contributors
+
+- [MrFearTick](https://github.com/MrFearTick) — Highlight reference, parent destruction patterns, networking lens, monetization expansion
+
 ## License
 
 MIT
