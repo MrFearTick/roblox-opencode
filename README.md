@@ -19,10 +19,18 @@
 ## Install
 
 ```bash
-opencode plugin github:TabooHarmony/roblox-opencode
+npm install roblox-opencode@git+https://github.com/TabooHarmony/roblox-opencode.git --prefix ~/.config/opencode
 ```
 
-Then run `/setup-game` in your project.
+Then add to your `opencode.json` (global or project):
+
+```json
+{
+  "plugin": ["~/.config/opencode/node_modules/roblox-opencode"]
+}
+```
+
+Restart OpenCode, then run `/setup-game` in your project.
 
 > npm publish is coming soon. Once live, install with `opencode plugin roblox-opencode`.
 
