@@ -65,7 +65,7 @@ export async function runSetup(directory: string) {
 
   // Step 1: Copy skills (always overwrite — ensures updates propagate)
   steps.push({
-    name: "Copy 16 skills to .opencode/skills/",
+    name: "Copy 17 skills to .opencode/skills/",
     fn: () => {
       const src = join(pkgDir, "skills")
       const dest = join(projectDir, ".opencode", "skills")
@@ -119,6 +119,7 @@ export async function runSetup(directory: string) {
       // Merge aliases — preserve user-defined ones, add/overwrite ours
       const aliases = (luaurc.aliases as Record<string, string>) || {}
       aliases["Packages"] = ".opencode/vendor/rbxutil"
+      aliases["Fusion"] = ".opencode/vendor/fusion"
       aliases["ProfileStore"] = ".opencode/vendor/profilestore"
       aliases["Promise"] = ".opencode/vendor/promise"
       aliases["TestEZ"] = ".opencode/vendor/testez"

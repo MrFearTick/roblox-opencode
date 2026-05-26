@@ -35,6 +35,7 @@ test("runSetup copies skills, vendor, config, and AGENTS.md", async () => {
     // .luaurc has aliases
     const luaurc = JSON.parse(readFileSync(join(dir, ".luaurc"), "utf-8"))
     assert.equal(luaurc.aliases["Packages"], ".opencode/vendor/rbxutil")
+    assert.equal(luaurc.aliases["Fusion"], ".opencode/vendor/fusion")
     assert.equal(luaurc.aliases["ProfileStore"], ".opencode/vendor/profilestore")
     assert.equal(luaurc.aliases["Promise"], ".opencode/vendor/promise")
 

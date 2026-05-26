@@ -24,10 +24,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 
 -- Adjust this path to match your project structure:
--- Wally:   require(ReplicatedStorage.Packages.Fusion)
--- Vendor:  require(ReplicatedStorage[".opencode"].vendor.fusion)
--- Custom:  require(game.ReplicatedStorage.Fusion)
-local Fusion = require(ReplicatedStorage.Packages.Fusion)
+-- Wally:    require(ReplicatedStorage.Packages.Fusion)
+-- Custom:   require(game.ReplicatedStorage.Fusion)
+-- Vendored: (default, from roblox-opencode setup)
+local Fusion = require(ReplicatedStorage[".opencode"].vendor.fusion)
 local scoped = Fusion.scoped
 local peek = Fusion.peek
 local Children = Fusion.Children

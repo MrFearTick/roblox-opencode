@@ -43,7 +43,7 @@ async function runSetup(directory) {
   const projectDir = directory;
   const steps = [];
   steps.push({
-    name: "Copy 16 skills to .opencode/skills/",
+    name: "Copy 17 skills to .opencode/skills/",
     fn: () => {
       const src = join(pkgDir, "skills");
       const dest = join(projectDir, ".opencode", "skills");
@@ -96,6 +96,7 @@ async function runSetup(directory) {
       }
       const aliases = luaurc.aliases || {};
       aliases["Packages"] = ".opencode/vendor/rbxutil";
+      aliases["Fusion"] = ".opencode/vendor/fusion";
       aliases["ProfileStore"] = ".opencode/vendor/profilestore";
       aliases["Promise"] = ".opencode/vendor/promise";
       aliases["TestEZ"] = ".opencode/vendor/testez";
