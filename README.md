@@ -14,7 +14,7 @@
   17 skills, production-ready vendor libraries, and complete UI references — so the AI writes code that actually works in Studio.
 </p>
 
----
+<br/>
 
 ## Install
 
@@ -78,12 +78,12 @@ Copied to your project on setup. No Wally required.
 | **Component** | CollectionService tag binding |
 | **t** | Runtime type checking |
 | **TestEZ** | BDD testing framework |
-| + 25 more | RbxUtil packages on demand |
+| + RbxUtil | 25 additional utility packages available on demand |
 
 ## Commands
 
 | Command | What it does |
-|---------|-------------|
+|---------|--------------|
 | `/setup-game` | One-time project config — skills, vendor, LSP, AGENTS.md |
 | `/sync-check` | Verify Script Sync is working correctly |
 
@@ -100,11 +100,11 @@ The AI loads relevant skills on-demand based on your prompt. Ask it to build a s
 
 - [OpenCode](https://opencode.ai) — AI coding assistant
 - [luau-lsp](https://github.com/JohnnyMorganz/luau-lsp) — Luau diagnostics (setup checks and guides install)
-- [Roblox Studio](https://www.roblox.com/create) — With Script Sync and MCP server enabled
+- [Roblox Studio](https://www.roblox.com/create) — with Script Sync and MCP server enabled
 
 ## Update
 
-Update the version in `opencode.json` (or use `"roblox-opencode"` for latest), restart OpenCode. Run `/setup-game` again to refresh skills and vendor libs. Content outside managed markers in `AGENTS.md` is preserved.
+Update the version in `opencode.json`, restart OpenCode, and run `/setup-game` again to refresh skills and vendor libs. Omit the version to track latest. Content outside managed markers in `AGENTS.md` is preserved.
 
 ## Contributors
 
