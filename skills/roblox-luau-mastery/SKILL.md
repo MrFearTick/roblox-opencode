@@ -50,7 +50,7 @@ Key rules:
 - Always use `task.wait/spawn/delay` (never deprecated `wait/spawn/delay`)
 - Instance.new: configure properties THEN set Parent last (replication race)
 - Services: `game:GetService("Name")` at top of script, stored in locals
-- OOP: `.` for constructors, `:` for methods. `__index = self` pattern.
+- Methods: use `:` (implicit self) for instance methods, `.` (explicit self) for constructors/static methods. Prefix private methods with `_`.
 - Type system: gradual typing, `typeof()` for narrowing, `::` for casting, `export type` for cross-module
 - Prefer backtick interpolation over `..` concatenation
 - Use vendored libs (Promise, Trove, Signal, Comm, Component, ProfileStore) over raw equivalents
@@ -1155,6 +1155,30 @@ end
 return InventoryManager
 ```
 
+### Method Definitions
+
+- Use `:` (colon) for instance methods - self is implicit
+- Use `.` (dot) for constructors and static methods - self must be explicit
+
+```luau
+-- : for instance methods (self is implicit)
+function MyClass:methodName()
+    -- self refers to the instance
+end
+
+-- . for constructors and static methods (self must be explicit)
+function MyClass.new()
+    local self = setmetatable({}, MyClass)
+    return self
+end
+
+-- Calling conventions match definition
+obj:methodName()        -- colon: self passed implicitly
+MyClass.new()           -- dot: no self
+```
+
+**Key rule:** `:` is syntactic sugar for `.` with automatic `self` injection. `obj:method(a)` is equivalent to `obj.method(obj, a)`.
+
 ### General Guidelines
 
 - Use `local` for every variable and function declaration.
@@ -1366,10 +1390,7 @@ local obj = MyClass.new()
 obj:doSomething() --> ERROR: attempt to call a nil value
 -- Because __index is not set, method lookup fails
 
--- Common mistake: using . instead of : for method definitions
-function MyClass.method(self: any) end  -- explicit self with . (verbose, avoid)
-function MyClass:method() end            -- implicit self with : (idiomatic, use this)
--- Use : for all instance methods. Use . only for static constructors (new).
+-- See ### Method Definitions in Best Practices for . vs : conventions
 
 -- Common mistake: modifying the metatable instead of the instance
 function MyClass:setName(name: string)
